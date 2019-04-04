@@ -1,0 +1,21 @@
+(1)
+the left ventricular cavity (LV);
+左心室
+(2)
+the right ventricular cavity (RV);
+右心室
+(3)
+the left atrial cavity (LA);
+左心房
+(4)
+the right atrial cavity (RA);
+右心房
+(5)
+the myocardium of the left ventricle (Myo) where the epicardium (Epi) is assessed in the evaluation of surface delineation;
+
+(6)
+the ascending aorta trunk from the aortic valve to the superior level of the atria;
+
+(7)
+the pulmonary artery (PA) trunk from the pulmonary valve to the bifurcation point.
+肺动脉

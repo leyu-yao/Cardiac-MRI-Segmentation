@@ -1,0 +1,5 @@
+
+*.npy
+*.nii
+*.nii.gz
+*.pth
