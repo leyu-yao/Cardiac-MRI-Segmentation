@@ -103,9 +103,9 @@ def dice_loss(pred, target):
 
     smooth = 1
     
-    #N = pred.shape[0]
-    pred_flat = pred.view(-1)
-    target_flat = target.view(-1)
+    N = pred.shape[0]
+    pred_flat = pred.view(N,-1)
+    target_flat = target.view(N,-1)
     intersection = pred_flat * target_flat
     
     num = 2 * intersection.sum() + smooth
@@ -181,12 +181,12 @@ class CrossEntropyDiceLoss(nn.Module):
         super(CrossEntropyDiceLoss, self).__init__()
         self.C = num_of_classes
         if weights is None:
-            self.weights = torch.ones(2) / 2
+            self.weights = (torch.ones(2) / 2).to('cuda')
         else:
             self.weights = weights / weights.sum()
             
         if weights_for_class is None:
-            self.weights_for_class = torch.ones(self.C) / self.C
+            self.weights_for_class = (torch.ones(self.C) / self.C).to('cuda')
         else:
             self.weights_for_class = weights_for_class / weights_for_class.sum()
             
@@ -196,7 +196,7 @@ class CrossEntropyDiceLoss(nn.Module):
         self.dice_loss = 0
          
         for i in range(self.C):
-            self.dice_loss += dice_loss(input[:,i], target[:,i]) * self.weights_for_class[i]
+            self.dice_loss += dice_loss(input[:,i], target[:,i]) * float(self.weights_for_class[i])
          
         # calculate cross entropy
 #        out = input.view(-1).clamp(1e-3,1)

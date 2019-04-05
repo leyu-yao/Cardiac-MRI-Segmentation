@@ -10,8 +10,8 @@ import sys
 import matplotlib.pyplot as plt
 from loss_function import CrossEntropy3d, DiceLoss ,CrossEntropyDiceLoss
 #import visdom
-
-
+import win_unicode_console
+win_unicode_console.enable()
 #vis = visdom.Visom(env='model_1')
 
 # 是否使用cuda
@@ -65,11 +65,11 @@ def train3d():
     
     #criterion = torch.nn.BCELoss(weight=weights.to(device))
     # criterion = DICELoss()
-    criterion = CrossEntropy3d()
+    criterion = CrossEntropyDiceLoss(num_of_classes=5)
     optimizer = optim.Adam(model.parameters())
     dataset = Dataset3d("./train3d",transform=None,target_transform=None)
-    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
-    train_model(model, criterion, optimizer, dataloaders)
+    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+    train_model(model, criterion, optimizer, dataloaders, num_epochs=50)
     
 def train2d():
     model = Unet2d(1, 5).to(device)
@@ -89,7 +89,7 @@ def train2d():
     optimizer = optim.Adam(model.parameters())
     dataset = Dataset2d("./train2d",transform=None,target_transform=None)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
-    train_model(model, criterion, optimizer, dataloaders)
+    train_model(model, criterion, optimizer, dataloaders, num_epochs=50)
 
 #显示模型的输出结果
 def test2d():
@@ -115,31 +115,33 @@ def test2d():
             #    weights=torch.tensor([0.5, 1., 1., 1., 1.]))
             #criterion = CrossEntropy3d()
             criterion = CrossEntropyDiceLoss(num_of_classes=5,
-                    weights_for_dice=torch.tensor([1, 1., 2., 2., 2.]).to(device))
+                    weights_for_class=torch.tensor([1, 1., 2., 2., 2.]).to(device))
             loss = criterion(outputs, labels)
             average_loss += loss.item()
             print("image loss = %0.3f" % loss.item())
             
             # visualize
-            plt.ion()
-            for _ in range(5):
+            # plt.ion()
+            # for _ in range(5):
             
-                plt.subplot(5,3,1+3*_)
-                plt.title('class%d'%(_))
-                img_y=torch.squeeze(outputs.cpu()).numpy()[_]
-                plt.imshow(img_y)
+            #     plt.subplot(5,3,1+3*_)
+            #     plt.title('class%d'%(_))
+            #     img_y=torch.squeeze(outputs.cpu()).numpy()[_]
+            #     plt.imshow(img_y)
                 
-                plt.subplot(5,3,2+3*_)
-                plt.title('gt')
-                img_y=torch.squeeze(y).numpy()[_]
-                plt.imshow(img_y)
+            #     plt.subplot(5,3,2+3*_)
+            #     plt.title('gt')
+            #     img_y=torch.squeeze(y).numpy()[_]
+            #     plt.imshow(img_y)
                 
-            plt.subplot(5,3,3)
-            plt.title('input')
-            img_y=torch.squeeze(x).numpy()
-            plt.imshow(img_y)
+            # plt.subplot(5,3,3)
+            # plt.title('input')
+            # img_y=torch.squeeze(x).numpy()
+            # plt.imshow(img_y)
+
+            print(outputs)
             plt.show()
-            #plt.pause(0.001)
+            plt.pause(0.5)
         
         print("average loss on test set is %0.3f" % (average_loss/dt_size))
 
@@ -153,12 +155,12 @@ def plot_3d_colorful(outputs, labels, inputs):
     for w in range(0,W,8):
         plt.subplot(W/8,3,w/8*3+1)
         plt.title("output")
-        img_y=outputs.numpy()[0,1,:,:,w]
+        img_y=outputs.numpy()[0,2,:,:,w]
         plt.imshow(img_y)
         
         plt.subplot(W/8,3,w/8*3+2)
         plt.title("ground truth")
-        img_y=labels.numpy()[0,1,:,:,w]        
+        img_y=labels.numpy()[0,2,:,:,w]        
         plt.imshow(img_y)
         
         plt.subplot(W/8,3,w/8*3+3)
@@ -187,10 +189,10 @@ def test3d():
         for x, y in dataloaders:
             outputs=model(x.to(device))
             labels = y.to(device)
-            criterion = CrossEntropy3d()
+            criterion = CrossEntropyDiceLoss(num_of_classes=5)
             loss = criterion(outputs, labels)
             average_loss += loss.item()
-            
+            print(loss.item())
             plot_3d_colorful(outputs.cpu(), y, x)
         
         print("average loss on test set is %0.3f" % (average_loss/dt_size))
