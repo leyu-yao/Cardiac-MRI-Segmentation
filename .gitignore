@@ -3,3 +3,4 @@
 *.nii
 *.nii.gz
 *.pth
+*.pyc
