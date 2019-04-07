@@ -24,9 +24,11 @@ y_transforms = transforms.ToTensor()
 
 
 def train_model(model, criterion, optimizer, dataload, num_epochs=5):
-    #import matplotlib.pyplot as plt
-    #loss_plt = []
-    #vis_idx = 0
+    # Data paralize
+#    if torch.cuda.device_count() > 1:
+#      print("Let's use", torch.cuda.device_count(), "GPUs!")
+#      model = nn.DataParallel(model)
+  
     
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch+1, num_epochs))
