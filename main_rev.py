@@ -9,7 +9,7 @@ import sys
 import matplotlib.pyplot as plt
 
 # import project modules
-from unet3d import SmallUnet3d, Unet3d, Unet2d
+from models import SmallUnet3d, Unet3d, Unet2d
 from dataset import Dataset3d, Dataset2d
 from loss_function import CrossEntropy3d, DiceLoss ,CrossEntropyDiceLoss
 from util import fix_unicode_bug

@@ -4,7 +4,7 @@ import argparse
 from torch.utils.data import DataLoader
 from torch import autograd, optim
 from torchvision.transforms import transforms
-from unet3d import SmallUnet3d, Unet3d, Unet2d
+from models import SmallUnet3d, Unet3d, Unet2d
 from dataset import Dataset3d, Dataset2d
 import sys
 import matplotlib.pyplot as plt
