@@ -131,6 +131,12 @@ def read_nii_as_np(img_fn, mask_fn):
     
     return img_np, mask_np_oh, affine
 
+'''
+fix print unicode bug
+'''
+def fix_unicode_bug():
+    import win_unicode_console
+    win_unicode_console.enable()
 
 
      
