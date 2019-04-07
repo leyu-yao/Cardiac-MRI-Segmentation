@@ -29,10 +29,9 @@ This is my graduation project. Based on 3D-Unet, a 3D-segmentation network is im
 
 
 ## To Do  
-- metrics.py is not implemented.  
 - main.py training process may need to estimate the time it may takes.  
-- implement a test progrom to test the performance.  
-- add data paralism feature to make it more efficiently in muti-GPU environment.   
+- main.py optimize the args select.  
+- implement a test progrom to test the performance.    
 - implement model_zoo.py for different models.  
 
 ## Further plans  
