@@ -89,20 +89,20 @@ class Np_Cutter(object):
                     z2 = ww*self.block_size[2]+self.block_size[2]
 
                     if dd == d:
-                        x1 = - self.block_size[0]
-                        x2 = 0
+                        x1 = D - self.block_size[0]
+                        x2 = D
                     if hh == h:
-                        y1 = - self.block_size[1]
-                        y2 = 0
+                        y1 = H - self.block_size[1]
+                        y2 = H
                     if ww == w:
-                        z1 = - self.block_size[2]
-                        z2 = 0
+                        z1 = W - self.block_size[2]
+                        z2 = W
 
                     # 3d
                     block_arr = arr[x1:x2, y1:y2, z1:z2]
                     pos_tuple = (x1, y1, z1)
                     
-                    res.append((block_arr, pos_tuple))
+                    res.append((block_arr.astype(np.float32), pos_tuple))
 
         return res
 
@@ -126,14 +126,15 @@ class Np_Tensor_Converter(object):
         if len(shape) == 4:
             return torch.from_numpy(np_arr[np.newaxis,:,:,:,:]).to(self.device)
         elif len(shape) == 3:
-            return torch.from_numpy(np_arr[np.newaxis,np.newaxis,:,:,:].to(self.device))
+            np_arr_ = np_arr[np.newaxis,np.newaxis,:,:,:]
+            return torch.from_numpy(np_arr_).to(self.device)
         pass
 
     def tensor2np(self, tensor):
         '''
         1,C,x,y,z tensor => C,x,y,z np
         '''
-        return tensor.squeeze().numpy()
+        return tensor.squeeze().cpu().numpy()
         
     
         
@@ -145,8 +146,8 @@ class Crusher(object):
         res C,X,Y,Z
         marker X,Y,Z
         '''
-        self.res = np.zeros(*res_shape_tuple)
-        self.marker = np.zeros(*res_shape_tuple)
+        self.res = np.zeros(tuple(res_shape_tuple))
+        self.marker = np.zeros(tuple(res_shape_tuple)[1:])
         self.dx, self.dy, self.dz = block_size_tuple
     
     def update(self, arr, pos):
@@ -155,6 +156,7 @@ class Crusher(object):
         pos (x,y,z)
         '''
         x,y,z = pos
+        print(pos)
         self.res[:, x:x+self.dx, y:y+self.dy, z:z+self.dz] = arr
         self.marker[x:x+self.dx, y:y+self.dy, z:z+self.dz] += 1
 
@@ -236,20 +238,20 @@ class Test(object):
     on a certain dataset.
     '''
 
-    def __init__(self, workspace, deivce, ckp, block_size, num_classes):
+    def __init__(self, workspace, device, ckp, block_size, num_classes):
         '''
         construt model and load weights
         make dataset with filename
         '''
         self.workspace = workspace
-        self.device = deivce
+        self.device = device
         self.ckp = ckp
         self.block_size = block_size
         self.num_classes = num_classes
-        self.net = Network_pretrained(ckp, deivce,num_classes)
+        self.net = Network_pretrained(ckp, device,num_classes)
         self.cvt = Np_Tensor_Converter(self.device)
 
-    def __call_(self):
+    def __call__(self):
         '''
         run test on all data
         '''
@@ -261,4 +263,13 @@ class Test(object):
             print(score)
 
 
+
+if __name__ == "__main__":
+    workspace = "./test"
+    device = 'cuda'
+    ckp = "weights_1_Unet3d.pth"
+    block_size = (32,32,32)
+    num_classes = 5
+    test = Test(workspace, device, ckp, block_size, num_classes)
+    test()
 
