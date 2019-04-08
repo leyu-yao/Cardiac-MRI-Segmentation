@@ -71,7 +71,40 @@ class Np_Cutter(object):
         calculate num_blocks
         return list of (block_arr, (pos_x, pos_y, pos_z))
         '''
-        pass
+        D, H, W = arr.shape
+        d = 1 + int((D-self.block_size[0])/self.block_size[0])
+        h = 1 + int((H-self.block_size[1])/self.block_size[1])
+        w = 1 + int((W-self.block_size[2])/self.block_size[2])
+
+        res = []
+        
+        for dd in range(d+1):
+            for hh in range(h+1):
+                for ww in range(w+1):
+                    x1 = dd*self.block_size[0]
+                    x2 = dd*self.block_size[0]+self.block_size[0]
+                    y1 = hh*self.block_size[1]
+                    y2 = hh*self.block_size[1]+self.block_size[1]
+                    z1 = ww*self.block_size[2]
+                    z2 = ww*self.block_size[2]+self.block_size[2]
+
+                    if dd == d:
+                        x1 = - self.block_size[0]
+                        x2 = 0
+                    if hh == h:
+                        y1 = - self.block_size[1]
+                        y2 = 0
+                    if ww == w:
+                        z1 = - self.block_size[2]
+                        z2 = 0
+
+                    # 3d
+                    block_arr = arr[x1:x2, y1:y2, z1:z2]
+                    pos_tuple = (x1, y1, z1)
+                    
+                    res.append((block_arr, pos_tuple))
+
+        return res
 
 
 
@@ -229,4 +262,3 @@ class Test(object):
 
 
 
-        
