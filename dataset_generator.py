@@ -369,8 +369,8 @@ if __name__ == '__main__':
     parse.add_argument("action", type=str)
     parse.add_argument("dst_dir", type=str)
     parse.add_argument("src_dir", type=str)
-    parse.add_argument("--block_size", type=tuple, default=(128,128,64))
-    parse.add_argument("--stride", type=tuple, default=(64,64,32))
+    parse.add_argument("--block_size", type=tuple, default=(32,32,32))
+    parse.add_argument("--stride", type=tuple, default=(100,100,50))
 
     
     args = parse.parse_args()

@@ -38,8 +38,8 @@ class Metric_AUC():
         n_classes = y_score.shape[1]
         
         # to numpy
-        y_score = y_score.numpy()
-        y_test = y_test.numpy()
+        y_score = y_score.cpu().numpy()
+        y_test = y_test.cpu().numpy()
         
         # to shape [n_samples, n_classes]
         def _reshape(inp, N, C):

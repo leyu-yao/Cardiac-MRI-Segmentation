@@ -85,10 +85,24 @@ class Np_Tensor_Converter(object):
         self.device = device
 
     def np2tensor(self, np_arr):
+        '''
+        X x,y,z np => 1,1,x,y,z tensor
+        Y C,X,Y,Z => 1,C,x,y,z 
+        '''
+        shape = np_arr.shape
+        if len(shape) == 4:
+            return torch.from_numpy(np_arr[np.newaxis,:,:,:,:]).to(self.device)
+        elif len(shape) == 3:
+            return torch.from_numpy(np_arr[np.newaxis,np.newaxis,:,:,:].to(self.device))
         pass
 
     def tensor2np(self, tensor):
-        pass
+        '''
+        1,C,x,y,z tensor => C,x,y,z np
+        '''
+        return tensor.squeeze().numpy()
+        
+    
         
 
 class Crusher(object):
@@ -145,7 +159,7 @@ class Test_on_file(object):
         self.img_fn = img_fn
         self.msk_fn = msk_fn
         (self.img_np, self.mask_np, self.affine) = read_nii_as_np(img_fn, msk_fn)
-        
+        #(X,Y,Z) (C,X,Y,Z)
         self.cutter = Np_Cutter(block_size)
         self.block_list = self.cutter(self.img_np)#[(block_arr, (x, y, z))]
 
@@ -179,6 +193,8 @@ class Test_on_file(object):
         fn = self.msk_fn.replace("label", "pred")
         util.output_write_to_file
         util.output_write_to_file(pred_tensor, fn, self.affine)
+
+        return score
 
 
 class Test(object):

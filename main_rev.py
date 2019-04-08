@@ -72,7 +72,7 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     optimizer = optim.Adam(model.parameters())
     dataset = Dataset3d(workspace, transform=X_transform, 
                         target_transform=Y_transform)
-    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
 
 def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='cuda', X_transform=None, Y_transform=None):
@@ -92,7 +92,7 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     optimizer = optim.Adam(model.parameters())
     dataset = Dataset2d(workspace, transform=X_transform, 
                         target_transform=Y_transform)
-    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
 
 def eval2d(num_classes, ckp, metrics, device='cuda;', workspace="./eval2d", X_transform=None, Y_transform=None, vis=False):
