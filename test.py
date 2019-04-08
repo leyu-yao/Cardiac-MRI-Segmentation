@@ -221,12 +221,12 @@ class Test_on_file(object):
             self.crusher.update(self.cvt.tensor2np(y_tensor), pos)
 
         pred_np = self.crusher()
-        pred_tensor = self.cvt.np2tensor(pred_np)
+        pred_tensor = self.cvt.np2tensor(pred_np);del pred_np
         score = self.AUC(pred_tensor, self.cvt.np2tensor(self.mask_np))
 
         #output file
         fn = self.msk_fn.replace("label", "pred")
-        util.output_write_to_file
+        
         util.output_write_to_file(pred_tensor, fn, self.affine)
 
         return score

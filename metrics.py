@@ -33,6 +33,82 @@ class Metric_AUC():
         
         考虑是否集成作图功能及优化参数选择方式，目前不作图
         '''
+        
+        print('calculating score')
+        
+        # get n_classes and batch-size N
+        batch_size = y_score.shape[0]
+        n_classes = y_score.shape[1]
+        
+        # to numpy
+        y_score = y_score.cpu().numpy()
+        y_test = y_test.cpu().numpy()
+        
+        # to shape [n_samples, n_classes]
+        def _reshape(inp, N, C):
+            return inp.swapaxes(0,1).reshape(C, -1).swapaxes(0,1)
+        y_score = _reshape(y_score, batch_size, n_classes)
+        y_test = _reshape(y_test, batch_size, n_classes)
+        
+        
+        # Compute ROC curve and ROC area for each class
+        fpr = dict()
+        tpr = dict()
+        roc_auc = dict()
+        # for i in range(n_classes):
+        #     fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+        #     roc_auc[i] = auc(fpr[i], tpr[i])
+        
+        
+        # Compute micro-average ROC curve and ROC area
+        # fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
+        # roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+        roc_auc["micro"] = roc_auc_score(y_test, y_score)
+        
+        # Compute macro-average ROC curve and ROC area
+        # First aggregate all false positive rates
+        # all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
+        
+        # Then interpolate all ROC curves at this points
+        # mean_tpr = np.zeros_like(all_fpr)
+        # for i in range(n_classes):
+        #     mean_tpr += interp(all_fpr, fpr[i], tpr[i])
+        
+        # # Finally average it and compute AUC
+        # mean_tpr /= n_classes
+        
+        # fpr["macro"] = all_fpr
+        # tpr["macro"] = mean_tpr
+        # roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
+        
+        # return value
+        if self.average == "micro":
+            return roc_auc["micro"]
+        else:
+            return roc_auc["macro"]
+
+class Metric_AUC_complex():
+    def __init__(self, curve=False, average='micro'):
+        self.curve_required = curve
+        self.average = average
+
+    
+    
+    def __call__(self, y_score, y_test):
+        '''
+        @input
+        pred tensor in (N,C,*)
+        target tensor in (N,C,*)
+        
+        @return vaule
+        auc in float
+        
+        To do:
+        将fpr,tpr,roc_auc初始化保留，由各函数计算其中的项，根据参数选择是否计算
+        目前之前返回
+        
+        考虑是否集成作图功能及优化参数选择方式，目前不作图
+        '''
         # get n_classes and batch-size N
         batch_size = y_score.shape[0]
         n_classes = y_score.shape[1]
@@ -81,6 +157,7 @@ class Metric_AUC():
             return roc_auc["micro"]
         else:
             return roc_auc["macro"]
+
 
 if __name__ == '__main__':
     

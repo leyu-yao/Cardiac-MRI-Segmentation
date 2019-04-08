@@ -29,6 +29,7 @@ This is my graduation project. Based on 3D-Unet, a 3D-segmentation network is im
 ### metrics.py  
 
 - implementaion of metrics  
+- it is slow, may need to optimize.  
   
 ### models.py  
 
@@ -41,17 +42,15 @@ This is my graduation project. Based on 3D-Unet, a 3D-segmentation network is im
 ### test.py  
 
 - implement a complete test program using the network
-
+- now finished. 
 ## Current Work  
 
 - now working on 3D unet training.  
 
 ## To Do  
 
-- main.py training process may need to estimate the time it may takes.  
-- main.py optimize the args select.  
-- implement a test progrom to test the performance.
 - implement model_zoo.py for different models.  
+- optimize metrics.py speed. 
 
 ## Further plans  
 

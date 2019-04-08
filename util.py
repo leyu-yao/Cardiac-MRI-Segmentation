@@ -81,7 +81,7 @@ def output_write_to_file(output, filename, affine=None):
     if affine is None:
         affine = np.eye(4)# have to be 4
     
-    data_np = mat.numpy().astype(np.int16)
+    data_np = mat.cpu().numpy().astype(np.int16)
     img = nib.Nifti1Image(data_np, affine)
     
     #nib.save(img, os.path.join('build','test4d.nii.gz'))
