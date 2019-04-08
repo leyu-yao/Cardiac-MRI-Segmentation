@@ -39,10 +39,11 @@ This is my graduation project. Based on 3D-Unet, a 3D-segmentation network is im
 
 - some auxiliary function  
   
-### test.py  
+### test.py 
 
-- implement a complete test program using the network
-- now finished. 
+- implement a complete test program using the network  
+- now finished.
+
 ## Current Work  
 
 - now working on 3D unet training.  
@@ -51,6 +52,8 @@ This is my graduation project. Based on 3D-Unet, a 3D-segmentation network is im
 
 - implement model_zoo.py for different models.  
 - optimize metrics.py speed. 
+- use decorator to get time tick
+- transform3d.py for data augumation
 
 ## Further plans  
 
