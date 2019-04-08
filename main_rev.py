@@ -15,6 +15,8 @@ from loss_function import CrossEntropy3d, DiceLoss ,CrossEntropyDiceLoss
 from util import fix_unicode_bug
 from metrics import Metric_AUC
 
+from timeTick import timeTicker
+
 fix_unicode_bug()
 
 
@@ -75,6 +77,7 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
 
+
 def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='cuda', X_transform=None, Y_transform=None):
     '''
     @construct dataloader, criterion, optimizer, construct and train a 2d model
@@ -94,6 +97,7 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
                         target_transform=Y_transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
+
 
 def eval2d(num_classes, ckp, metrics, device='cuda;', workspace="./eval2d", X_transform=None, Y_transform=None, vis=False):
     '''
@@ -144,6 +148,7 @@ def eval2d(num_classes, ckp, metrics, device='cuda;', workspace="./eval2d", X_tr
 
 
         print("average score on evaluation set is %0.3f" % (average_score/dt_size))
+
 
 def eval3d(num_classes, ckp, metrics, device='cuda;', workspace="./eval3d", X_transform=None, Y_transform=None, vis=False):
     '''

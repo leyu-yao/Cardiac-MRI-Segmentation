@@ -51,7 +51,7 @@ class Dataset3d(data.Dataset):
             img_y = self.target_transform(img_y)
             
 
-        print(img_x.size(), img_y.size())
+        #print(img_x.size(), img_y.size())
         return img_x, img_y
 
     def __len__(self):
