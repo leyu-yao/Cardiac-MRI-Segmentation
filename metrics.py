@@ -63,7 +63,7 @@ class Metric_AUC():
         # Compute micro-average ROC curve and ROC area
         # fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
         # roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
-        roc_auc["micro"] = roc_auc_score(y_test, y_score)
+        roc_auc["micro"] = roc_auc_score(y_test.ravel(), y_score.ravel())
         
         # Compute macro-average ROC curve and ROC area
         # First aggregate all false positive rates

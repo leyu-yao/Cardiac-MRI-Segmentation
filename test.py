@@ -6,7 +6,7 @@ Created on Tue Apr  2 20:27:13 2019
 
 This file contains some functions for testing pre-trained model.
 """
-
+import argparse
 
 import torch
 import numpy as np
@@ -265,11 +265,26 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    workspace = "./test"
-    device = 'cuda'
-    ckp = "weights_1_Unet3d.pth"
-    block_size = (32,32,32)
-    num_classes = 5
-    test = Test(workspace, device, ckp, block_size, num_classes)
-    test()
+    # workspace = "./test"
+    # device = 'cuda'
+    # ckp = "weights_1_Unet3d.pth"
+    # block_size = (32,32,32)
+    # num_classes = 5
+    # test = Test(workspace, device, ckp, block_size, num_classes)
+    # test()
 
+    parse = argparse.ArgumentParser()
+    parse.add_argument("action", type=str)
+    parse.add_argument("--workspace", type=str, default="./test")
+    parse.add_argument("--device", type=str, default="cuda")
+    parse.add_argument("--ckp", type=str)
+    parse.add_argument("--block", type=tuple, default=(128,128,96))
+    parse.add_argument("--num_classes", type=int, default=5)
+
+    args = parse.parse_args()
+
+    if args.action == "test":
+        test = Test(args.workspace, args.device, args.ckp, 
+                    args.block_size, args.num_classes)
+        test()
+        
