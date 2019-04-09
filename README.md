@@ -39,10 +39,20 @@ This is my graduation project. Based on 3D-Unet, a 3D-segmentation network is im
 
 - some auxiliary function  
   
-### test.py 
+### test.py
 
 - implement a complete test program using the network  
 - now finished.
+
+### timeTick.py  
+
+- implement a decorator for time tick.  
+
+### transform3d.py  
+
+- implement class for transforms.  
+- composed of tranforms is supported.  
+- random select from transforms is supported.  
 
 ## Current Work  
 
@@ -52,8 +62,7 @@ This is my graduation project. Based on 3D-Unet, a 3D-segmentation network is im
 
 - implement model_zoo.py for different models.  
 - optimize metrics.py speed. 
-- use decorator to get time tick
-- transform3d.py for data augumation
+- transform3d.py for data augumation, enrich methods.  
 
 ## Further plans  
 
