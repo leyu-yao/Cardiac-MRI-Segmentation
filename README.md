@@ -22,7 +22,7 @@ This is my graduation project. Based on 3D-Unet, a 3D-segmentation network is im
 
 - implementation of loss function used in training  
   
-### main.py  
+### main_rev.py  
 
 - contains some core function, train and predict  
   
@@ -63,6 +63,9 @@ This is my graduation project. Based on 3D-Unet, a 3D-segmentation network is im
 - implement model_zoo.py for different models.  
 - optimize metrics.py speed. 
 - transform3d.py for data augumation, enrich methods.  
+- fix bug in test.py dynamicly select num_classes.  
+- in np cutter, if stride is too large, may generate minus value in position.  
+- add remap() in util.py remap [0,1,..7] to origin label value to visualize better.  
 
 ## Further plans  
 
