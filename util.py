@@ -97,7 +97,7 @@ def one_hot(np_label, num_of_class = 5):
         if i==0:
             continue
         out[i,:,:,:][np_label==num]=1
-    
+
     out[0,:,:,:] = 1 - np.sum(out[1:,:,:,:], axis=0)
     
     

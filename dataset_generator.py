@@ -59,7 +59,7 @@ def generate(dst, src, block_size, stride):
         mask = mask.get_fdata()
         
         # one hot
-        mask = util.one_hot(mask, num_of_class=5)
+        mask = util.one_hot(mask, num_of_class=8)
         
         # add axis
         img = img[np.newaxis,:,:,:]
@@ -367,8 +367,8 @@ if __name__ == '__main__':
     parse.add_argument("action", type=str)
     parse.add_argument("dst_dir", type=str)
     parse.add_argument("src_dir", type=str)
-    parse.add_argument("--block_size", nargs='+', type=int, default=(32,32,32))
-    parse.add_argument("--stride", nargs='+', type=int, default=(100,100,50))
+    parse.add_argument("--block_size", nargs='+', type=int, default=(128,128,64))
+    parse.add_argument("--stride", nargs='+', type=int, default=(64,64,16))
 
     
     args = parse.parse_args()
