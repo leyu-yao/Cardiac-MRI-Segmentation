@@ -57,7 +57,7 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
     return model
 
 
-def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='cuda', X_transform=None, Y_transform=None):
+def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='cuda', transform=None):
     '''
     @construct dataloader, criterion, optimizer, construct and train a 3d model
     @input
@@ -66,19 +66,17 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     workspace
     num_epochs
     device
-    X_transform
-    Y_transform
+    transform
     '''
     model = Unet3d(1, num_classes).to(device)
     criterion = CrossEntropyDiceLoss(num_of_classes=num_classes)
     optimizer = optim.Adam(model.parameters())
-    dataset = Dataset3d(workspace, transform=X_transform, 
-                        target_transform=Y_transform)
+    dataset = Dataset3d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
 
 
-def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='cuda', X_transform=None, Y_transform=None):
+def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='cuda', transform=None):
     '''
     @construct dataloader, criterion, optimizer, construct and train a 2d model
     @input
@@ -87,19 +85,17 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     workspace
     num_epochs
     device
-    X_transform
-    Y_transform
+    transform
     '''
     model = Unet2d(1, num_classes).to(device)
     criterion = CrossEntropyDiceLoss(num_of_classes=num_classes)
     optimizer = optim.Adam(model.parameters())
-    dataset = Dataset2d(workspace, transform=X_transform, 
-                        target_transform=Y_transform)
+    dataset = Dataset2d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
 
 
-def eval2d(num_classes, ckp, metrics, device='cuda;', workspace="./eval2d", X_transform=None, Y_transform=None, vis=False):
+def eval2d(num_classes, ckp, metrics, device='cuda;', workspace="./eval2d", transform=None, vis=False):
     '''
     evaluation on eval-test
     metrics is required has method __call__(y_pred_tensor, y_true_tensor)
@@ -108,7 +104,7 @@ def eval2d(num_classes, ckp, metrics, device='cuda;', workspace="./eval2d", X_tr
     '''
     model = Unet2d(1, num_classes).to(device)
     model.load_state_dict(torch.load(ckp, map_location=device))
-    dataset = Dataset2d(workspace, transform=X_transform, target_transform=Y_transform)
+    dataset = Dataset2d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=1)
     model.eval()
 
@@ -150,7 +146,7 @@ def eval2d(num_classes, ckp, metrics, device='cuda;', workspace="./eval2d", X_tr
         print("average score on evaluation set is %0.3f" % (average_score/dt_size))
 
 
-def eval3d(num_classes, ckp, metrics, device='cuda;', workspace="./eval3d", X_transform=None, Y_transform=None, vis=False):
+def eval3d(num_classes, ckp, metrics, device='cuda;', workspace="./eval3d", transform=None, vis=False):
     '''
     evaluation on eval-test
     metrics is required has method __call__(y_pred_tensor, y_true_tensor)
@@ -159,7 +155,7 @@ def eval3d(num_classes, ckp, metrics, device='cuda;', workspace="./eval3d", X_tr
     '''
     model = Unet3d(1, num_classes).to(device)
     model.load_state_dict(torch.load(ckp, map_location=device))
-    dataset = Dataset3d(workspace, transform=X_transform, target_transform=Y_transform)
+    dataset = Dataset3d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=1)
     model.eval()
 
