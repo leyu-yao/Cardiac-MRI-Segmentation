@@ -278,7 +278,7 @@ if __name__ == "__main__":
     parse.add_argument("--workspace", type=str, default="./test")
     parse.add_argument("--device", type=str, default="cuda")
     parse.add_argument("--ckp", type=str)
-    parse.add_argument("--block", type=tuple, default=(128,128,96))
+    parse.add_argument("--block", type=tuple, default=(128,128,64))
     parse.add_argument("--num_classes", type=int, default=5)
 
     args = parse.parse_args()
