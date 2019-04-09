@@ -29,8 +29,6 @@ def _make_dataset(root, content='_label.nii.gz'):
     
     return imgs
 
-    return out
-
 '''
 TO DO
 get list of file
@@ -369,15 +367,15 @@ if __name__ == '__main__':
     parse.add_argument("action", type=str)
     parse.add_argument("dst_dir", type=str)
     parse.add_argument("src_dir", type=str)
-    parse.add_argument("--block_size", nargs='+', type=tuple, default=(32,32,32))
-    parse.add_argument("--stride", type=tuple, default=(100,100,50))
+    parse.add_argument("--block_size", nargs='+', type=int, default=(32,32,32))
+    parse.add_argument("--stride", nargs='+', type=int, default=(100,100,50))
 
     
     args = parse.parse_args()
     if args.action == 'g':
-        generate(args.dst_dir, args.src_dir, tuple(args.block_size), args.stride)
+        generate(args.dst_dir, args.src_dir, tuple(args.block_size), tuple(args.stride))
     elif args.action == 't':
-        generate_2d_test_data(args.dst_dir, args.src_dir, tuple(args.block_size), args.stride)
+        generate_2d_test_data(args.dst_dir, args.src_dir, tuple(args.block_size), tuple(args.stride))
     elif args.action == 'g_no_cut':
         generate_no_cut(args.dst_dir, args.src_dir, tuple(args.block_size))
     elif args.action == 'g_slice':
