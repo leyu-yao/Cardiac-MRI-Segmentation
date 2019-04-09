@@ -39,3 +39,5 @@ class DoubleConv2d(nn.Module):
 
     def forward(self, input):
         return self.conv(input)
+
+
