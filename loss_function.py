@@ -110,8 +110,11 @@ def dice_loss(pred, target):
     
     num = 2 * intersection.sum() + smooth
     
-    den1 = (pred_flat * pred_flat).sum()
-    den2 = (target_flat * target_flat).sum()
+    #den1 = (pred_flat * pred_flat).sum()
+    #den2 = (target_flat * target_flat).sum()
+
+    den1 = (pred_flat).sum()
+    den2 = (target_flat).sum()
     
     den = den1 + den2 + smooth
     
@@ -144,7 +147,7 @@ class DiceLoss(nn.Module):
         super(DiceLoss, self).__init__()
         self.C = num_of_classes
         if weights is None:
-            self.weights = torch.ones(self.C) / self.C
+            self.weights = (torch.ones(self.C) / self.C).to('cuda')
         else:
             self.weights = weights / weights.sum()
         

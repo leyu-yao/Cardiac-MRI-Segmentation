@@ -97,7 +97,7 @@ def one_hot(np_label, num_of_class = 5):
         if i==0:
             continue
         out[i,:,:,:][np_label==num]=1
-    
+
     out[0,:,:,:] = 1 - np.sum(out[1:,:,:,:], axis=0)
     
     
@@ -117,7 +117,7 @@ def one_hot(np_label, num_of_class = 5):
 output size
 (x,y,z) (c,x,y,z) (4,4)
 '''
-def read_nii_as_np(img_fn, mask_fn):
+def read_nii_as_np(img_fn, mask_fn, num_classes):
     # read nii.gz file
     img = nib.load(img_fn)
     msk = nib.load(mask_fn)
@@ -127,7 +127,7 @@ def read_nii_as_np(img_fn, mask_fn):
     # transform the matrix into numpy array
     img_np = img.get_fdata()
     mask_np = msk.get_fdata()
-    mask_np_oh = one_hot(mask_np)
+    mask_np_oh = one_hot(mask_np, num_classes)
     
     return img_np, mask_np_oh, affine
 

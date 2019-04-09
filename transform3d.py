@@ -42,6 +42,12 @@ class Transpose(object):
     def __call__(self, X, Y):
         return X.transpose(self.dim1, self.dim2), Y.transpose(self.dim1, self.dim2)
 
+class DummyTransform(object):
+
+
+    def __call__(self, X, Y):
+        return X, Y
+
 
 class ComposedTransformer(object):
     '''

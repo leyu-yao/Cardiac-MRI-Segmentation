@@ -14,7 +14,7 @@ from dataset import Dataset3d, Dataset2d
 from loss_function import CrossEntropy3d, DiceLoss ,CrossEntropyDiceLoss
 from util import fix_unicode_bug
 from metrics import Metric_AUC
-
+import transform3d
 from timeTick import timeTicker
 
 fix_unicode_bug()
@@ -69,7 +69,7 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     transform
     '''
     model = Unet3d(1, num_classes).to(device)
-    criterion = CrossEntropyDiceLoss(num_of_classes=num_classes)
+    criterion = DiceLoss(num_of_classes=num_classes)
     optimizer = optim.Adam(model.parameters())
     dataset = Dataset3d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
@@ -197,7 +197,8 @@ if __name__ == "__main__":
     if args.action == "train2d":
         train2d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device)
     elif args.action == "train3d":
-        train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device)
+        tran = transform3d.RandomTransformer(transform3d.Transpose(), transform3d.DummyTransform())
+        train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)
     elif args.action == "eval2d":
         metric = Metric_AUC()
         eval2d(args.num_classes, args.ckp, metric, args.device, args.workspace)

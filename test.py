@@ -193,7 +193,7 @@ class Test_on_file(object):
         self.block_size = block_size
         self.img_fn = img_fn
         self.msk_fn = msk_fn
-        (self.img_np, self.mask_np, self.affine) = read_nii_as_np(img_fn, msk_fn)
+        (self.img_np, self.mask_np, self.affine) = read_nii_as_np(img_fn, msk_fn, 8)
         #(X,Y,Z) (C,X,Y,Z)
         self.cutter = Np_Cutter(block_size)
         self.block_list = self.cutter(self.img_np)#[(block_arr, (x, y, z))]
@@ -248,7 +248,7 @@ class Test(object):
         self.ckp = ckp
         self.block_size = block_size
         self.num_classes = num_classes
-        self.net = Network_pretrained(ckp, device,num_classes)
+        self.net = Network_pretrained(ckp, device, num_classes)
         self.cvt = Np_Tensor_Converter(self.device)
 
     def __call__(self):
