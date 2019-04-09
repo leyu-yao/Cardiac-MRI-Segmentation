@@ -9,20 +9,8 @@ import torch.nn as nn
 import torch
 from torch import autograd
 
-class DoubleConv3d(nn.Module):
-    def __init__(self, in_ch, mid_ch, out_ch):
-        super(DoubleConv3d, self).__init__()
-        self.conv = nn.Sequential(
-            nn.Conv3d(in_ch, mid_ch, 3, padding=1),
-            nn.BatchNorm3d(mid_ch),
-            nn.ReLU(inplace=True),
-            nn.Conv3d(mid_ch, out_ch, 3, padding=1),
-            nn.BatchNorm3d(out_ch),
-            nn.ReLU(inplace=True)
-        )
+from model_components import DoubleConv2d, DoubleConv3d
 
-    def forward(self, input):
-        return self.conv(input)
 
 
 class Unet3d(nn.Module):
@@ -133,43 +121,30 @@ class SmallUnet3d(nn.Module):
         out = nn.Softmax(dim=1)(c8);del c8
         return out
 
-class DoubleConv(nn.Module):
-    def __init__(self, in_ch, out_ch):
-        super(DoubleConv, self).__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(inplace=True)
-        )
 
-    def forward(self, input):
-        return self.conv(input)
 
 
 class Unet2d(nn.Module):
     def __init__(self,in_ch,out_ch):
         super(Unet2d, self).__init__()
         self.name = "Unet2d"
-        self.conv1 = DoubleConv(in_ch, 64)
+        self.conv1 = DoubleConv2d(in_ch, 64)
         self.pool1 = nn.MaxPool2d(2)
-        self.conv2 = DoubleConv(64, 128)
+        self.conv2 = DoubleConv2d(64, 128)
         self.pool2 = nn.MaxPool2d(2)
-        self.conv3 = DoubleConv(128, 256)
+        self.conv3 = DoubleConv2d(128, 256)
         self.pool3 = nn.MaxPool2d(2)
-        self.conv4 = DoubleConv(256, 512)
+        self.conv4 = DoubleConv2d(256, 512)
         self.pool4 = nn.MaxPool2d(2)
-        self.conv5 = DoubleConv(512, 1024)
+        self.conv5 = DoubleConv2d(512, 1024)
         self.up6 = nn.ConvTranspose2d(1024, 512, 2, stride=2)
-        self.conv6 = DoubleConv(1024, 512)
+        self.conv6 = DoubleConv2d(1024, 512)
         self.up7 = nn.ConvTranspose2d(512, 256, 2, stride=2)
-        self.conv7 = DoubleConv(512, 256)
+        self.conv7 = DoubleConv2d(512, 256)
         self.up8 = nn.ConvTranspose2d(256, 128, 2, stride=2)
-        self.conv8 = DoubleConv(256, 128)
+        self.conv8 = DoubleConv2d(256, 128)
         self.up9 = nn.ConvTranspose2d(128, 64, 2, stride=2)
-        self.conv9 = DoubleConv(128, 64)
+        self.conv9 = DoubleConv2d(128, 64)
         self.conv10 = nn.Conv2d(64,out_ch, 1)
 
     def forward(self,x):
@@ -200,26 +175,7 @@ class Unet2d(nn.Module):
         return out
 
 
-if __name__=='__main__':
-    model = Unet3d(1,8)
-    
-    import nibabel as nib
 
-    sample_filename = 'mr_train_1003_image.nii.gz'
-    
-    # read nii.gz file
-    img = nib.load(sample_filename)
-    
-    # check shape
-    print(img.shape)
-    # (512, 512, 160)
-    
-    # transform the matrix into numpy array
-    data = img.get_fdata()
-    
-    data = data.astype(np.float32)
-    
-    modelsize(model,torch.from_numpy(data[np.newaxis,np.newaxis,:,:,:]))
 
 
 
