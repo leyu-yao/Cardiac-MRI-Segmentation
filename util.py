@@ -30,11 +30,13 @@ def make_dataset(root, label_elem='_label.nii.gz'):
 
 
 
-'''
-function:
-    randomly choose a fraction of (img, mask) to another folder
-'''
+
 def split_dataset(dst_dir, src_dir, fraction=0.3, img_elem='_image.npy',mask_elem='_label.npy'):
+    '''
+    function:
+        randomly choose a fraction of (img, mask) to another folder
+    '''
+
     img_mask_tuple_list = make_dataset(src_dir, label_elem=mask_elem)
     
     if img_mask_tuple_list is None:
@@ -59,20 +61,28 @@ def split_dataset(dst_dir, src_dir, fraction=0.3, img_elem='_image.npy',mask_ele
         shutil.move(mask, new_msk)
 
 
-'''
-This function takes in output of a model [N,C,D,H,W]  N = 1
-Determine the class predicted
-Generate image of (C,D,H,W) C = 1
-Save to a .NII File
-Visualize NII file if needed
 
-output_write_to_file(torch.rand(1,3,500,500,100), 'test.nii.gz')
-
-'''
 def output_write_to_file(output, filename, affine=None):
+    '''
+    This function takes in output of a model [N,C,D,H,W]  N = 1
+    Determine the class predicted
+    Generate image of (C,D,H,W) C = 1
+    Save to a .NII File
+    Visualize NII file if needed
+
+    output_write_to_file(torch.rand(1,3,500,500,100), 'test.nii.gz')
+
+    '''
     mat = torch.argmax(output[0], dim=0, keepdim=False)
+
     # to increase visualization quality
-    mat *= 120
+    # Now using the same value as label
+    numl = [  0, 205, 420, 500, 550, 600, 820, 850]
+    #mat *= 120
+    for i, value in enumerate(numl):
+        mat[mat==i] = value
+
+
     # mat (D,H,W)
     
     # write to nii
@@ -113,11 +123,12 @@ def one_hot(np_label, num_of_class = 5):
     
     return out
 
-'''
-output size
-(x,y,z) (c,x,y,z) (4,4)
-'''
+
 def read_nii_as_np(img_fn, mask_fn, num_classes):
+    '''
+    output size
+    (x,y,z) (c,x,y,z) (4,4)
+    '''
     # read nii.gz file
     img = nib.load(img_fn)
     msk = nib.load(mask_fn)
@@ -131,12 +142,32 @@ def read_nii_as_np(img_fn, mask_fn, num_classes):
     
     return img_np, mask_np_oh, affine
 
-'''
-fix print unicode bug
-'''
+
 def fix_unicode_bug():
+    '''
+    fix print unicode bug
+    '''
     import win_unicode_console
     win_unicode_console.enable()
+
+def remap_nii(fn, gain=1):
+    '''
+    remap label [0, 1, 2, 3, 4, 5, 6, 7] to [  0, 205, 420, 500, 550, 600, 820, 850]
+    '''
+    img = nib.load(fn)
+
+    affine = img.affine
+    mat = img.get_fdata()
+    mat /= gain
+
+    numl = [  0, 205, 420, 500, 550, 600, 820, 850]
+    for i, value in enumerate(numl):
+        mat[mat==i] = value
+    
+    img = nib.Nifti1Image(mat, affine)
+    
+    #nib.save(img, os.path.join('build','test4d.nii.gz'))
+    nib.save(img, fn)
 
 
      
@@ -149,12 +180,17 @@ if __name__ == '__main__':
     parse.add_argument("--fraction", type=float, default=0.3)
     parse.add_argument("--img_elem", type=str, default='_image.npy')
     parse.add_argument("--mask_elem", type=str, default='_label.npy')
+    parse.add_argument("--filename", type=str)
     args = parse.parse_args()
 
     if args.action=="split":
         split_dataset(args.dst_dir, args.src_dir, args.fraction, args.img_elem,
                       args.mask_elem)
         #split ./test2d ./train2d 0.3
+
+    elif args.action == "remap":
+        remap_nii(args.filename, 120)
+
 
 
 
