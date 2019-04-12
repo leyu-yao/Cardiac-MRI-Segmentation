@@ -55,15 +55,15 @@ class Metric_AUC():
         fpr = dict()
         tpr = dict()
         roc_auc = dict()
-        # for i in range(n_classes):
-        #     fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
-        #     roc_auc[i] = auc(fpr[i], tpr[i])
+        for i in range(n_classes):
+            fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+            roc_auc[i] = auc(fpr[i], tpr[i])
         
         
         # Compute micro-average ROC curve and ROC area
-        # fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
-        # roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
-        roc_auc["micro"] = roc_auc_score(y_test.ravel(), y_score.ravel())
+        fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
+        roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+        #roc_auc["micro"] = roc_auc_score(y_test.ravel(), y_score.ravel())
         
         # Compute macro-average ROC curve and ROC area
         # First aggregate all false positive rates
@@ -82,10 +82,12 @@ class Metric_AUC():
         # roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
         
         # return value
-        if self.average == "micro":
-            return roc_auc["micro"]
-        else:
-            return roc_auc["macro"]
+        # if self.average == "micro":
+        #     return roc_auc["micro"]
+        # else:
+        #     return roc_auc["macro"]
+
+        return roc_auc
 
 class Metric_AUC_complex():
     def __init__(self, curve=False, average='micro'):

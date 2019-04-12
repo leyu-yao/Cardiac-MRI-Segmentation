@@ -183,7 +183,7 @@ class Test_on_file(object):
     6.init a AUC meter
     '''
 
-    def __init__(self, img_fn, msk_fn, block_size, cvt, net, stride):
+    def __init__(self, img_fn, msk_fn, block_size, cvt, net, stride, num_classes):
         '''
         block_size tuple
         Read nii file. \n
@@ -194,7 +194,8 @@ class Test_on_file(object):
         self.block_size = block_size
         self.img_fn = img_fn
         self.msk_fn = msk_fn
-        (self.img_np, self.mask_np, self.affine) = read_nii_as_np(img_fn, msk_fn, 8)
+        self.num_classes = num_classes
+        (self.img_np, self.mask_np, self.affine) = read_nii_as_np(img_fn, msk_fn, self.num_classes)
         #(X,Y,Z) (C,X,Y,Z)
         self.cutter = Np_Cutter(block_size, stride)
         self.block_list = self.cutter(self.img_np)#[(block_arr, (x, y, z))]
@@ -260,7 +261,7 @@ class Test(object):
         img_msk_fn_list = make_dataset(self.workspace)
 
         for img_fn, msk_fn in img_msk_fn_list:
-            file_test = Test_on_file(img_fn, msk_fn, self.block_size, self.cvt, self.net, self.stride)
+            file_test = Test_on_file(img_fn, msk_fn, self.block_size, self.cvt, self.net, self.stride, self.num_classes)
             score = file_test()
             print(score)
 

@@ -37,7 +37,7 @@ read in img and mask
 mask one-hot
 img and mask cut into []
 '''
-def generate(dst, src, block_size, stride):
+def generate(dst, src, block_size, stride, num_classes):
     img_lst = _make_dataset(src)
     
     idx = 0
@@ -59,7 +59,7 @@ def generate(dst, src, block_size, stride):
         mask = mask.get_fdata()
         
         # one hot
-        mask = util.one_hot(mask, num_of_class=8)
+        mask = util.one_hot(mask, num_of_class=num_classes)
         
         # add axis
         img = img[np.newaxis,:,:,:]
@@ -369,11 +369,12 @@ if __name__ == '__main__':
     parse.add_argument("src_dir", type=str)
     parse.add_argument("--block_size", nargs='+', type=int, default=(128,128,64))
     parse.add_argument("--stride", nargs='+', type=int, default=(64,64,16))
+    parse.add_argument("--num_classes", type=int, default=5)
 
     
     args = parse.parse_args()
     if args.action == 'g':
-        generate(args.dst_dir, args.src_dir, tuple(args.block_size), tuple(args.stride))
+        generate(args.dst_dir, args.src_dir, tuple(args.block_size), tuple(args.stride), args.num_classes)
     elif args.action == 't':
         generate_2d_test_data(args.dst_dir, args.src_dir, tuple(args.block_size), tuple(args.stride))
     elif args.action == 'g_no_cut':
