@@ -40,6 +40,8 @@ class Unet3d(nn.Module):
         
         self.conv7 = DoubleConv3d(64+128, 64, 64)
         self.conv8 = nn.Conv3d(64,out_ch, 1)
+
+        self.out_ch = out_ch
         
 
 
@@ -63,8 +65,10 @@ class Unet3d(nn.Module):
         c7=self.conv7(merge3);del merge3
         c8=self.conv8(c7);del c7
         
-        #out = nn.Sigmoid()(c8);del c8
-        out = nn.Softmax(dim=1)(c8);del c8
+        if self.out_ch == 1:
+            out = nn.Sigmoid()(c8);del c8
+        else:
+            out = nn.Softmax(dim=1)(c8);del c8
         return out
 
 class SmallUnet3d(nn.Module):
@@ -117,8 +121,10 @@ class SmallUnet3d(nn.Module):
         c7=self.conv7(merge3);del merge3
         c8=self.conv8(c7);del c7
         
-        #out = nn.Sigmoid()(c8);del c8
-        out = nn.Softmax(dim=1)(c8);del c8
+        if self.out_ch == 1:
+            out = nn.Sigmoid()(c8);del c8
+        else:
+            out = nn.Softmax(dim=1)(c8);del c8
         return out
     
 class SmallSMallUnet3d(nn.Module):
@@ -171,8 +177,10 @@ class SmallSMallUnet3d(nn.Module):
         c7=self.conv7(merge3);del merge3
         c8=self.conv8(c7);del c7
         
-        out = nn.Sigmoid()(c8);del c8
-        #out = nn.Softmax(dim=1)(c8);del c8
+        if self.out_ch == 1:
+            out = nn.Sigmoid()(c8);del c8
+        else:
+            out = nn.Softmax(dim=1)(c8);del c8
         return out
 
 
