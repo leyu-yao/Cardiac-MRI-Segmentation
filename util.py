@@ -97,6 +97,30 @@ def output_write_to_file(output, filename, affine=None):
     #nib.save(img, os.path.join('build','test4d.nii.gz'))
     nib.save(img, filename)
 
+def tensor_or_arr_write_to_nii_file(inp, filename=None, affine=np.eye(4)):
+    '''
+    possible input
+    tensor 1,1,W,H,D
+    np arr 1, W, H, D
+    '''
+    if filename is None:
+        id = hash(inp)
+        fn = "%s.nii.gz" % str(id)
+    else:
+        fn = filename
+
+    # tensor
+    if type(inp) == torch.Tensor:
+        out = inp[0,0,:,:,:].cpu().numpy()
+        img = nib.Nifti1Image(out, affine)
+        nib.save(img, filename)
+    
+    # array
+    elif type(inp) == numpy.array:
+        out = inp[0,:,:,:]
+        img = nib.Nifti1Image(out, affine)
+        nib.save(img, filename)
+
 def one_hot(np_label, num_of_class = 5):
     shape = np_label.shape
     out = np.zeros((num_of_class, *shape), dtype=np.float32)
@@ -123,6 +147,20 @@ def one_hot(np_label, num_of_class = 5):
     
     return out
 
+def label_to_fore_and_background(np_label):
+    '''
+    input np_label D,H,W
+    output 1,D,H,W
+    '''
+    shape = np_label.shape
+    out = np.zeros((1, *shape), dtype=np.float32)
+
+    numl = [  0, 205, 420, 500, 550, 600, 820, 850]
+    
+    for i, num in enumerate(numl[1:]):
+        out[0,:,:,:][np_label==num]=1
+
+    return out
 
 def read_nii_as_np(img_fn, mask_fn, num_classes):
     '''

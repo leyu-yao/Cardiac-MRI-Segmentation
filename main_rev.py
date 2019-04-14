@@ -6,13 +6,15 @@ from torch.utils.data import DataLoader
 from torch import autograd, optim, nn
 from torchvision.transforms import transforms
 import sys
+import os 
 import matplotlib.pyplot as plt
 
 # import project modules
-from models import SmallUnet3d, Unet3d, Unet2d
+from models import SmallUnet3d, Unet3d, Unet2d, SmallSMallUnet3d
 from dataset import Dataset3d, Dataset2d
 from loss_function import CrossEntropy3d, DiceLoss ,CrossEntropyDiceLoss
 from util import fix_unicode_bug
+import util
 from metrics import Metric_AUC
 import transform3d
 from timeTick import timeTicker
@@ -51,9 +53,10 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
             print("In epoch %d, %d/%d,train_loss:%0.3f" % (epoch, 
                     step, (dt_size - 1) // dataload.batch_size + 1, 
                     loss.item()))
+            torch.save(model.state_dict(),
+                       'weights_%d_%s.pth' % (num_epochs, model.name))
         print("epoch %d loss:%0.3f" % (num_epochs, epoch_loss/step))
-    torch.save(model.state_dict(),
-            'weights_%d_%s.pth' % (num_epochs, model.name))
+
     return model
 
 
@@ -70,6 +73,28 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     '''
     model = Unet3d(1, num_classes).to(device)
     criterion = DiceLoss(num_of_classes=num_classes)
+    optimizer = optim.Adam(model.parameters())
+    dataset = Dataset3d(workspace, transform=transform)
+    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+    train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
+    
+def train_roi(batch_size, num_epochs, workspace="./roi_train", device='cuda', transform=None):
+    '''
+    @construct dataloader, criterion, optimizer, construct and train a 3d model
+    @input
+    num_classes
+    batch_size
+    workspace
+    num_epochs
+    device
+    transform
+    '''
+    model = SmallSMallUnet3d(1, 1).to(device)
+    
+    #nn.MSELoss()
+    #criterion = CrossEntropyDiceLoss(num_of_classes=1)
+    criterion = nn.L1Loss()
+    
     optimizer = optim.Adam(model.parameters())
     dataset = Dataset3d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
@@ -181,6 +206,53 @@ def eval3d(num_classes, ckp, metrics, device='cuda;', workspace="./eval3d", tran
 
 
 
+def eval_roi(ckp, metrics, device='cuda;', workspace="./roi_eval", transform=None, vis=True):
+    '''
+    evaluation on eval-test
+    metrics is required has method __call__(y_pred_tensor, y_true_tensor)
+    ckp is path for weights of the model
+
+    '''
+    model = SmallSMallUnet3d(1, 1).to(device)
+    model.load_state_dict(torch.load(ckp, map_location=device))
+    dataset = Dataset3d(workspace, transform=transform)
+    dataloaders = DataLoader(dataset, batch_size=1)
+    model.eval()
+
+    dt_size = len(dataloaders.dataset)
+    average_score = 0
+
+    with torch.no_grad():
+        average_score = 0
+        for x,y in dataloaders:
+            outputs = model(x.to(device))
+            labels = y.to(device)
+            score = metrics(outputs, labels)
+            average_score += score[0]
+            print("score = %0.3f" % score[0])
+
+            if vis:
+                id = str(hash(x))
+                outputs[outputs>=0.5] = 1
+                outputs[outputs<0.5] = 0
+                fn = os.path.join(workspace, "pred_%s_label.nii.gz"%id)
+                util.tensor_or_arr_write_to_nii_file(labels, fn, affine=None)
+                
+                fn = os.path.join(workspace, "pred_%s_outputs.nii.gz"%id)
+                util.tensor_or_arr_write_to_nii_file(outputs, fn, affine=None)
+
+                fn = os.path.join(workspace, "pred_%s_inputs.nii.gz"%id)
+                util.tensor_or_arr_write_to_nii_file(x, fn, affine=None)
+
+                pass
+            
+
+
+
+        print("average score on evaluation set is %0.3f" % (average_score/dt_size))
+
+
+
 if __name__ == "__main__":
     parse = argparse.ArgumentParser()
     parse.add_argument("action", type=str, help="train or test")
@@ -205,5 +277,8 @@ if __name__ == "__main__":
     elif args.action == "eval3d":
         metric = Metric_AUC()
         eval3d(args.num_classes, args.ckp, metric, args.device, args.workspace)       
-
-        
+    elif args.action == "train_roi":
+        train_roi(args.batch_size, args.num_epochs, args.workspace, args.device, transform=None)
+    elif args.action == "eval_roi":
+        metric = Metric_AUC()
+        eval_roi(args.ckp, metric, args.device, args.workspace)           

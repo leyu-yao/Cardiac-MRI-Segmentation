@@ -12,7 +12,10 @@ import sys
 import argparse
 import matplotlib.pyplot as plt
 import cv2
+import torch
+
 import util
+import downsample
 #cv2.imwrite("filename.png", np.zeros((10,10)))  write image
 
 def _make_dataset(root, content='_label.nii.gz'):
@@ -29,15 +32,16 @@ def _make_dataset(root, content='_label.nii.gz'):
     
     return imgs
 
-'''
-TO DO
-get list of file
-read in img and mask
 
-mask one-hot
-img and mask cut into []
-'''
 def generate(dst, src, block_size, stride, num_classes):
+    '''
+    TO DO
+    get list of file
+    read in img and mask
+
+    mask one-hot
+    img and mask cut into []
+    '''
     img_lst = _make_dataset(src)
     
     idx = 0
@@ -96,14 +100,7 @@ def generate(dst, src, block_size, stride, num_classes):
                     np.save(img_name, block_img)
                     np.save(mask_name, block_mask)
                     
-#                    # save to nii
-#                    img_name = os.path.join(dst, '%d_image.nii'%idx)
-#                    mask_name = os.path.join(dst, '%d_label.nii'%idx)
-#                    #np.save(img_name, block_img)
-#                    
-#                    img_nii = nib.Nifti1Image(block_img, np.eye(4))
-#                    
-#                    nib.save(img_nii, img_name)
+
                     
                     idx += 1
         
@@ -203,21 +200,9 @@ def generate_2d_test_data(dst, src, block_size, stride):
                         plt.imshow(block_img[0,:,:,layer])
 
                         plt.pause(0.001)
-                        plt.show()
-                    
-#                    # save to nii
-#                    img_name = os.path.join(dst, '%d_image.nii'%idx)
-#                    mask_name = os.path.join(dst, '%d_label.nii'%idx)
-#                    #np.save(img_name, block_img)
-#                    
-#                    img_nii = nib.Nifti1Image(block_img, np.eye(4))
-#                    
-#                    nib.save(img_nii, img_name)
-                    
+                        plt.show()                    
                     idx += 1
-        
-        
-        
+
 def generate_no_cut(dst, src, block_size):
     img_lst = _make_dataset(src)
     
@@ -267,15 +252,7 @@ def generate_no_cut(dst, src, block_size):
         mask_name = os.path.join(dst, '%d_label.npy'%idx)
         np.save(img_name, img[:,d1:d2,h1:h2,w1:w2])
         np.save(mask_name, mask[:,d1:d2,h1:h2,w1:w2])
-        
-#                    # save to nii
-#                    img_name = os.path.join(dst, '%d_image.nii'%idx)
-#                    mask_name = os.path.join(dst, '%d_label.nii'%idx)
-#                    #np.save(img_name, block_img)
-#                    
-#                    img_nii = nib.Nifti1Image(block_img, np.eye(4))
-#                    
-#                    nib.save(img_nii, img_name)
+
         
         idx += 1
         
@@ -315,12 +292,7 @@ def generate_2d_slices_numpy(dst, src, visualize=False):
 
 
         for _ in range(W):
-            
-            # 数据清洗
-#            cnt = mask[1:,:,:,_].sum()
-#            if cnt == 0:
-#                print("ignoring slice%03d" % _)
-#                continue
+
             
             print("taking slice%03d" % _)
             
@@ -359,7 +331,68 @@ def show_size(src):
         sys.stdout.flush()
         print('processing %s' % img_fn)
         print(img.shape)
+
+def generate_ROI_data(dst, src, block_size, device):
+    img_lst = _make_dataset(src)
+    
+    idx = 0
+    
+    for img_fn,mask_fn in img_lst:
         
+        img = nib.load(img_fn)
+        mask = nib.load(mask_fn)
+
+        affine = mask.affine#(4,4)
+        
+        # get size  (d,h,w)
+        (D, H, W) = img.shape
+
+        sys.stdout.flush()
+        print('processing %s, shape : %d,%d,%d' % (img_fn, D, H, W))
+        
+        # transform to np 
+        img = img.get_fdata()
+        mask = mask.get_fdata()
+        
+        # one hot
+        mask = util.label_to_fore_and_background(mask)#mask 1,D,H,W
+                
+        # add axis
+        img = img[np.newaxis,:,:,:]#img 1,D,H,W
+                
+        # np.float32
+        img = img.astype(np.float32)
+        mask = mask.astype(np.float32)
+
+        # Downsample
+        ds = downsample.DownSample(block_size, device)
+
+        img_low = ds(img)
+        mask_low = ds(mask)
+
+
+        # save np file
+        img_name = os.path.join(dst, '%d_image.npy'%idx)
+        mask_name = os.path.join(dst, '%d_label.npy'%idx)
+        np.save(img_name, img_low)
+        np.save(mask_name, mask_low)
+        
+#        import matplotlib.pyplot as plt
+#        plt.subplot(2,2,1)
+#        plt.imshow(img[0,int(D/2),:,:])
+#        plt.subplot(2,2,2)
+#        plt.imshow(img_low[0,80,:,:])
+#        plt.subplot(2,2,3)
+#        plt.imshow(mask[0,int(D/2),:,:])
+#        plt.subplot(2,2,4)
+#        plt.imshow(mask_low[0,80,:,:])
+#        plt.show()
+#        idx += 1
+        
+        
+
+                    
+
         
         
 if __name__ == '__main__':
@@ -370,6 +403,7 @@ if __name__ == '__main__':
     parse.add_argument("--block_size", nargs='+', type=int, default=(128,128,64))
     parse.add_argument("--stride", nargs='+', type=int, default=(64,64,16))
     parse.add_argument("--num_classes", type=int, default=5)
+    parse.add_argument("--device", type=str, default='cuda')
 
     
     args = parse.parse_args()
@@ -383,5 +417,7 @@ if __name__ == '__main__':
         generate_2d_slices_numpy(args.dst_dir, args.src_dir, visualize=False)
     elif args.action == 'show_size':
         show_size(args.src_dir)
-
+    elif args.action == "roi":
+        device = torch.device(args.device)
+        generate_ROI_data(args.dst_dir, args.src_dir, args.block_size, args.device)
 
