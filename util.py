@@ -113,13 +113,13 @@ def tensor_or_arr_write_to_nii_file(inp, filename=None, affine=np.eye(4)):
     if type(inp) == torch.Tensor:
         out = inp[0,0,:,:,:].cpu().numpy()
         img = nib.Nifti1Image(out, affine)
-        nib.save(img, filename)
+        nib.save(img, fn)
     
     # array
     elif type(inp) == numpy.array:
         out = inp[0,:,:,:]
         img = nib.Nifti1Image(out, affine)
-        nib.save(img, filename)
+        nib.save(img, fn)
 
 def one_hot(np_label, num_of_class = 5):
     shape = np_label.shape
@@ -134,9 +134,7 @@ def one_hot(np_label, num_of_class = 5):
 
     out[0,:,:,:] = 1 - np.sum(out[1:,:,:,:], axis=0)
     
-    
-    
-    
+
     # binary class
 #    res = np.zeros((2,*shape),dtype=np.float32)
 #    #res[0,:,:,:] = np.eyes(out.size) - out[0,:,:,:]
