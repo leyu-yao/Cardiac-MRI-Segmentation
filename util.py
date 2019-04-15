@@ -68,3 +68,11 @@ def write_nii(inp, filename=None, affine=np.eye(4)):
         out = inp[0,:,:,:]
         img = nib.Nifti1Image(out, affine)
         nib.save(img, fn)
+
+
+def fix_unicode_bug():
+    '''
+    fix print unicode bug
+    '''
+    import win_unicode_console
+    win_unicode_console.enable()

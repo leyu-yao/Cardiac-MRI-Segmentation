@@ -14,10 +14,10 @@ class DoubleConv3d(nn.Module):
         super(DoubleConv3d, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv3d(in_ch, mid_ch, 3, padding=1),
-            nn.BatchNorm3d(mid_ch),
+            #nn.BatchNorm3d(mid_ch),
             nn.ReLU(inplace=True),
             nn.Conv3d(mid_ch, out_ch, 3, padding=1),
-            nn.BatchNorm3d(out_ch),
+            #nn.BatchNorm3d(out_ch),
             nn.ReLU(inplace=True)
         )
 
