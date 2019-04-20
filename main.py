@@ -16,7 +16,7 @@ import metrics
 import transforms
 import util
 
-util.fix_unicode_bug()
+#util.fix_unicode_bug()
 
 def train_model(model, criterion, optimizer, dataload, num_epochs, device, parallel):
     '''
