@@ -131,11 +131,11 @@ if __name__ == "__main__":
     if args.action == "train":
         #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         device = torch.device(args.device)
-        tran = transforms.SmartDownSample((args.resolution))
+        tran = transforms.DownSample((args.resolution))
         train(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=device, transform=tran, ckp=args.ckp)
 
     elif args.action == "test":
         device = torch.device(args.device)
-        tran = transforms.SmartDownSample((args.resolution))
+        tran = transforms.DownSample((args.resolution))
         metric = metrics.Metric_AUC()
         test(args.num_classes, args.ckp, metric, device=device, workspace="./test", transform=tran)
