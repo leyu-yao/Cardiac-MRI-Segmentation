@@ -55,36 +55,6 @@ class DownSample(object):
         return self.maxpool(x.unsqueeze(0)).squeeze(0), self.maxpool(y.unsqueeze(0)).squeeze(0)
 
 
-class SmartDownSample(object):
-    '''
-    down sample x and y at the same time
-    this is called smart because it keeps the d,h,w ratio. 
-    '''
-    def __init__(self, object_size):
-        '''
-        object_size (D, H, W) tuple
-        '''
-        self.object_size = object_size
-        self.memory_size = object_size[0] * object_size[1] *object_size[2]
-
-
-
-    def __call__(self, x, y):
-        #input C,D,H,W
-        C,D,H,W = x.shape
-        input_size = D * H * W
-        ratio = input_size / self.memory_size
-
-        def base_floor(x, base=8):
-            mo = x % base
-            return (x - mo)
-
-        D_desired = base_floor(D//ratio)
-        H_desired = base_floor(H//ratio)
-        W_desired = base_floor(W//ratio)
-
-        maxpool = torch.nn.AdaptiveMaxPool3d((D_desired, H_desired, W_desired))
-        return maxpool(x.unsqueeze(0)).squeeze(0), maxpool(y.unsqueeze(0)).squeeze(0)
 
 
 
