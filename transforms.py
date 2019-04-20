@@ -17,7 +17,7 @@ usage : tran = transform(para)
         X, Y = tran(X, Y)
 """
 
-import numpy as np
+
 import torch
 from torchvision import transforms
 from random import choice
@@ -73,11 +73,11 @@ class SmartDownSample(object):
         #input C,D,H,W
         C,D,H,W = x.shape
         input_size = D * H * W
-        ratio = np.cbrt(input_size / self.memory_size)
+        ratio = input_size / self.memory_size
 
         def base_floor(x, base=8):
             mo = x % base
-            return int(x - mo)
+            return (x - mo)
 
         D_desired = base_floor(D//ratio)
         H_desired = base_floor(H//ratio)
