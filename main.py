@@ -51,7 +51,7 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
                     loss.item()))
         torch.save(model.state_dict(),
                'weights_%d_%s.pth' % (num_epochs, model.name))
-        print("epoch %d loss:%0.3f" % (num_epochs, epoch_loss/step))
+        print("epoch %d loss:%0.3f" % (epoch, epoch_loss/step))
 
     return model
 
