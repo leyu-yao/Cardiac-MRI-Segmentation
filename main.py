@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torch import autograd, optim, nn
 import sys
 import os
-
+import time
 import matplotlib.pyplot as plt
 
 # import libs
@@ -26,10 +26,15 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
     if torch.cuda.device_count() > 1 and parallel:
         print("Using", torch.cuda.device_count(), "GPUs!")
         model = nn.DataParallel(model)
-
+        
+    # time estimation
+    total_work_laod = num_epochs * len(dataload.dataset)
+    time_start = time.time()
+    
+    
     for epoch in range(1, num_epochs+1):
-        print('Epoch {}/{}'.format(epoch, num_epochs))
-        print('-' * 10)
+        #print('Epoch {}/{}'.format(epoch, num_epochs))
+        #print('-' * 10)
         dt_size = len(dataload.dataset)
         epoch_loss = 0
         step = 0
@@ -46,12 +51,17 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
-            print("In epoch %d, %d/%d,train_loss:%0.3f" % (epoch, 
+            
+            time_now = time.time()
+            t_passed = time_now - time_start
+            work_load = step + dt_size * (epoch - 1)
+            sys.stdout.write("\rIn epoch %d, %d/%d,train_loss:%0.3f, passed :%.3fs, estimated %.3fs" % (epoch, 
                     step, (dt_size - 1) // dataload.batch_size + 1, 
-                    loss.item()))
+                    loss.item(), t_passed,
+                    t_passed / work_load * (total_work_laod - work_load)))
         torch.save(model.state_dict(),
                'weights_%d_%s.pth' % (num_epochs, model.name))
-        print("epoch %d loss:%0.3f" % (epoch, epoch_loss/step))
+        print(" loss:%0.3f" % (epoch_loss/step))
 
     return model
 
@@ -132,11 +142,15 @@ if __name__ == "__main__":
     if args.action == "train":
         #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         device = torch.device(args.device)
-        tran = transforms.SmartDownSample((args.resolution))
+        tran1 = transforms.SmartDownSample((args.resolution))
+        tran2 = transforms.Normalization()
+        tran = transforms.ComposedTransformer(tran1, tran2)
         train(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=device, transform=tran, ckp=args.ckp)
 
     elif args.action == "test":
         device = torch.device(args.device)
-        tran = transforms.SmartDownSample((args.resolution))
+        tran1 = transforms.SmartDownSample((args.resolution))
+        tran2 = transforms.Normalization()
+        tran = transforms.ComposedTransformer(tran1, tran2)
         metric = metrics.Metric_AUC()
         test(args.num_classes, args.ckp, metric, device=device, workspace="./test", transform=tran)

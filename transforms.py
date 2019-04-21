@@ -86,7 +86,12 @@ class SmartDownSample(object):
         maxpool = torch.nn.AdaptiveMaxPool3d((D_desired, H_desired, W_desired))
         return maxpool(x.unsqueeze(0)).squeeze(0), maxpool(y.unsqueeze(0)).squeeze(0)
 
-
+class Normalization(object):
+    '''
+    normalize sample x, does not affect y 
+    '''
+    def __call__(self, x, y):
+        return (x - x.mean()) / x.std(), y
 
 
 
@@ -141,5 +146,7 @@ if __name__ == "__main__":
     X = torch.rand(1,100,100,20)
     Y = torch.rand(5,100,100,20)
     
-    tran = DownSample((50,50,25))
+    norm = Normalization()
+    dm = DummyTransform()
+    tran = ComposedTransformer(norm)
     X, Y = tran(X, Y)
