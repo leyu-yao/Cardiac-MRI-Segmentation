@@ -49,8 +49,8 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
             print("In epoch %d, %d/%d,train_loss:%0.3f" % (epoch, 
                     step, (dt_size - 1) // dataload.batch_size + 1, 
                     loss.item()))
-            torch.save(model.state_dict(),
-                       'weights_%d_%s.pth' % (num_epochs, model.name))
+        torch.save(model.state_dict(),
+               'weights_%d_%s.pth' % (num_epochs, model.name))
         print("epoch %d loss:%0.3f" % (num_epochs, epoch_loss/step))
 
     return model
@@ -72,7 +72,7 @@ def train(num_classes, batch_size, num_epochs, workspace="./raw", device='cuda',
         model.load_state_dict(torch.load(ckp, map_location=device))
 
     criterion = losses.DiceLoss(num_of_classes=num_classes, device=device)
-    optimizer = optim.Adam(model.parameters())
+    optimizer = optim.SGD(model.parameters(), lr=1e-3, weight_decay=1e-4)
     ds = dataset.Dataset(workspace, transform=transform, num_classes=num_classes)
     dataloaders = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
