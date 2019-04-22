@@ -18,7 +18,7 @@ import util
 
 #util.fix_unicode_bug()
 
-def train_model(model, criterion, optimizer, dataload, num_epochs, device, parallel):
+def train_model(model, criterion, optimizer, dataload, num_epochs, device, parallel, weight_name):
     '''
     train procedure
     '''
@@ -60,12 +60,12 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
                     loss.item(), t_passed,
                     t_passed / work_load * (total_work_laod - work_load)))
         torch.save(model.state_dict(),
-               'weights_%d_%s.pth' % (num_epochs, model.name))
+               'weights_%d_%s.pth' % (num_epochs, model.name if weight_name is None else weight_name))
         print(" loss:%0.3f" % (epoch_loss/step))
 
     return model
 
-def train(num_classes, batch_size, num_epochs, workspace="./raw", device='cuda', transform=None, ckp=None):
+def train(num_classes, batch_size, num_epochs, workspace="./raw", device='cuda', transform=None, ckp=None, weight_name=None):
     '''
     @construct dataloader, criterion, optimizer, construct and train a 3d model
     @input
@@ -83,10 +83,10 @@ def train(num_classes, batch_size, num_epochs, workspace="./raw", device='cuda',
 
     criterion = losses.DiceLoss(num_of_classes=num_classes, device=device)
     #optimizer = optim.SGD(model.parameters(), lr=1e-3, weight_decay=1e-4)
-    optimizer = optim.Adam(model.parameters(), weight_decay=1e-4)
+    optimizer = optim.Adam(model.parameters(), weight_decay=5e-4)
     ds = dataset.Dataset(workspace, transform=transform, num_classes=num_classes)
     dataloaders = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=0)
-    train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
+    train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False, weight_name)
 
 
 def test(num_classes, ckp, metrics, device='cuda;', workspace="./test", transform=None, vis=False):
@@ -132,6 +132,7 @@ if __name__ == "__main__":
     parse.add_argument("--workspace", type=str)
     parse.add_argument("--cuda_index", type=str, default='0')
     parse.add_argument("--resolution", nargs='+', type=int, default=(160,160,114))
+    parse.add_argument("--weight_name", type=str, default=None)
     args = parse.parse_args()
 
 
@@ -145,7 +146,9 @@ if __name__ == "__main__":
         tran1 = transforms.SmartDownSample((args.resolution))
         tran2 = transforms.Normalization()
         tran = transforms.ComposedTransformer(tran1, tran2)
-        train(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=device, transform=tran, ckp=args.ckp)
+        train(args.num_classes, args.batch_size, args.num_epochs, 
+              args.workspace, device=device, transform=tran, 
+              ckp=args.ckp, weight_name=args.weight_name)
 
     elif args.action == "test":
         device = torch.device(args.device)
