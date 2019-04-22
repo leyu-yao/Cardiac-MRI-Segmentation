@@ -76,3 +76,13 @@ def fix_unicode_bug():
     '''
     import win_unicode_console
     win_unicode_console.enable()
+
+
+def remap_label_val(y, numl1, numl2):
+    '''
+    y: numpy or tensor as D,H,W
+    '''
+    for v1, v2 in zip(numl1, numl2):
+        y[y==v1] = v2
+    
+    return y
