@@ -4,3 +4,5 @@
 *.nii.gz
 *.pth
 *.pyc
+*.json
+*.png
