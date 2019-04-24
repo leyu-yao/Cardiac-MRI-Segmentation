@@ -18,6 +18,7 @@ import util
 from metrics import Metric_AUC
 import transform3d
 from timeTick import timeTicker
+import transform3d
 
 fix_unicode_bug()
 
@@ -267,7 +268,8 @@ if __name__ == "__main__":
     args = parse.parse_args()
 
     if args.action == "train2d":
-        train2d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device)
+        tran = transform3d.data_augumentation_2d(288)
+        train2d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)
     elif args.action == "train3d":
         tran = transform3d.RandomTransformer(transform3d.Transpose(), transform3d.DummyTransform())
         train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)

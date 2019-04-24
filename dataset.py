@@ -88,7 +88,6 @@ class Dataset2d(data.Dataset):
         if self.transform is not None:
             img_x, img_y = self.transform(img_x, img_y)
 
-        #print(img_x.size())
         return img_x, img_y
 
     def __len__(self):

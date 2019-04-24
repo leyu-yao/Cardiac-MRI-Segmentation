@@ -32,7 +32,18 @@ from random import choice
 
 # ADD Transforms Tomorrow
 
+class data_augumentation_2d(object):
 
+    def __init__(self,size):
+        self.size = size
+        self.mp = torch.nn.AdaptiveMaxPool2d((256,256))
+    def __call__(self, X, Y):
+        return self.mp(X.unsqueeze(0)).squeeze(0), self.mp(Y.unsqueeze(0)).squeeze(0)
+class DummyTransform(object):
+
+
+    def __call__(self, X, Y):
+        return X, Y
 
 class Transpose(object):
 

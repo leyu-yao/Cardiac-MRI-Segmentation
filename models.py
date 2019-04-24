@@ -210,6 +210,8 @@ class Unet2d(nn.Module):
         self.conv10 = nn.Conv2d(64,out_ch, 1)
 
     def forward(self,x):
+        #W = x.shape[2]
+        #print(W)
         c1=self.conv1(x)
         p1=self.pool1(c1)
         c2=self.conv2(p1)
