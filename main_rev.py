@@ -8,6 +8,7 @@ from torchvision.transforms import transforms
 import sys
 import os 
 import matplotlib.pyplot as plt
+import time
 
 # import project modules
 from models import SmallUnet3d, Unet3d, Unet2d, SmallSMallUnet3d
@@ -20,10 +21,10 @@ import transform3d
 from timeTick import timeTicker
 import transform3d
 
-fix_unicode_bug()
+#fix_unicode_bug()
 
 
-def train_model(model, criterion, optimizer, dataload, num_epochs, device, parallel):
+def train_model(model, criterion, optimizer, dataload, num_epochs, device, parallel, weight_name=None):
     '''
     train procedure
     '''
@@ -31,10 +32,15 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
     if torch.cuda.device_count() > 1 and parallel:
         print("Using", torch.cuda.device_count(), "GPUs!")
         model = nn.DataParallel(model)
-
+        
+    # time estimation
+    total_work_laod = num_epochs * len(dataload.dataset)
+    time_start = time.time()
+    
+    
     for epoch in range(1, num_epochs+1):
-        print('Epoch {}/{}'.format(epoch, num_epochs))
-        print('-' * 10)
+        #print('Epoch {}/{}'.format(epoch, num_epochs))
+        #print('-' * 10)
         dt_size = len(dataload.dataset)
         epoch_loss = 0
         step = 0
@@ -51,14 +57,20 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
-            print("In epoch %d, %d/%d,train_loss:%0.3f" % (epoch, 
+            
+            time_now = time.time()
+            t_passed = time_now - time_start
+            work_load = step + dt_size * (epoch - 1)
+            sys.stdout.write("\rIn epoch %d, %d/%d,train_loss:%0.6f, passed :%.1fs, estimated %.1fs" % (epoch, 
                     step, (dt_size - 1) // dataload.batch_size + 1, 
-                    loss.item()))
-            torch.save(model.state_dict(),
-                       'weights_%d_%s.pth' % (num_epochs, model.name))
-        print("epoch %d loss:%0.3f" % (num_epochs, epoch_loss/step))
+                    loss.item(), t_passed,
+                    t_passed / work_load * (total_work_laod - work_load)))
+        torch.save(model.state_dict(),
+               'weights_%d_%s.pth' % (num_epochs, model.name if weight_name is None else weight_name))
+        print(" loss:%0.6f" % (epoch_loss/step))
 
     return model
+
 
 
 def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='cuda', transform=None):
@@ -102,7 +114,7 @@ def train_roi(batch_size, num_epochs, workspace="./roi_train", device='cuda', tr
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
 
 
-def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='cuda', transform=None):
+def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='cuda', transform=None, weight_name=None, ckp=None):
     '''
     @construct dataloader, criterion, optimizer, construct and train a 2d model
     @input
@@ -114,11 +126,17 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     transform
     '''
     model = Unet2d(1, num_classes).to(device)
-    criterion = torch.nn.MSELoss(num_of_classes=num_classes)
+
+    # load weights
+    if ckp is not None:
+        model.load_state_dict(torch.load(ckp, map_location=device))
+
+    criterion = DiceLoss(num_of_classes=num_classes)
+    #criterion = torch.nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), weight_decay=1e-5)
     dataset = Dataset2d(workspace, transform=transform)
-    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
-    train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
+    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=8)
+    train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False,weight_name=weight_name)
 
 
 def eval2d(num_classes, ckp, metrics, device='cuda', workspace="./eval2d", transform=None, vis=False):
@@ -256,12 +274,13 @@ if __name__ == "__main__":
     parse.add_argument("--para", type=bool, default=False)
     parse.add_argument("--num_classes", type=int, default=5)
     parse.add_argument("--workspace", type=str)
+    parse.add_argument("--weight_name", type=str, default=None)
 
     args = parse.parse_args()
 
     if args.action == "train2d":
         tran = transform3d.data_augumentation_2d(288)
-        train2d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)
+        train2d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran,weight_name=args.weight_name, ckp=args.ckp)
     elif args.action == "train3d":
         tran = transform3d.RandomTransformer(transform3d.Transpose(), transform3d.DummyTransform())
         train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)
@@ -269,7 +288,7 @@ if __name__ == "__main__":
         #metric = Metric_AUC()
         metric = DiceLoss(num_of_classes=args.num_classes)
         tran = transform3d.data_augumentation_2d(288)
-        eval2d(args.num_classes, args.ckp, metric, args.device, args.workspace, transform=tran, vis=True)
+        eval2d(args.num_classes, args.ckp, metric, args.device, args.workspace, transform=tran, vis=False)
     elif args.action == "eval3d":
         metric = Metric_AUC()
         eval3d(args.num_classes, args.ckp, metric, args.device, args.workspace)       
