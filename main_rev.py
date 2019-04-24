@@ -114,14 +114,14 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     transform
     '''
     model = Unet2d(1, num_classes).to(device)
-    criterion = CrossEntropyDiceLoss(num_of_classes=num_classes)
-    optimizer = optim.Adam(model.parameters())
+    criterion = torch.nn.MSELoss(num_of_classes=num_classes)
+    optimizer = optim.Adam(model.parameters(), weight_decay=1e-5)
     dataset = Dataset2d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
 
 
-def eval2d(num_classes, ckp, metrics, device='cuda;', workspace="./eval2d", transform=None, vis=False):
+def eval2d(num_classes, ckp, metrics, device='cuda', workspace="./eval2d", transform=None, vis=False):
     '''
     evaluation on eval-test
     metrics is required has method __call__(y_pred_tensor, y_true_tensor)
@@ -147,26 +147,18 @@ def eval2d(num_classes, ckp, metrics, device='cuda;', workspace="./eval2d", tran
             print("score = %0.3f" % score)
 
             if vis:
-                plt.ion()
-                for _ in range(5):
+                plt.subplot(1,3,1)
+                plt.imshow(x[0,0,:,:].cpu().numpy())
                 
-                    plt.subplot(5,3,1+3*_)
-                    plt.title('class%d'%(_))
-                    img_y=torch.squeeze(outputs.cpu()).numpy()[_]
-                    plt.imshow(img_y)
-                    
-                    plt.subplot(5,3,2+3*_)
-                    plt.title('gt')
-                    img_y=torch.squeeze(y).numpy()[_]
-                    plt.imshow(img_y)
-                    
-                plt.subplot(5,3,3)
-                plt.title('input')
-                img_y=torch.squeeze(x).numpy()
-                plt.imshow(img_y)
-
+                
+                plt.subplot(1,3,2)
+                plt.imshow(labels[0].argmax(dim=0).cpu().numpy()*150)
+                
+                
+                plt.subplot(1,3,3)
+                plt.imshow(outputs[0].argmax(dim=0).cpu().numpy()*150)
+                
                 plt.show()
-                plt.pause(0.5)
 
 
         print("average score on evaluation set is %0.3f" % (average_score/dt_size))
@@ -274,8 +266,10 @@ if __name__ == "__main__":
         tran = transform3d.RandomTransformer(transform3d.Transpose(), transform3d.DummyTransform())
         train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)
     elif args.action == "eval2d":
-        metric = Metric_AUC()
-        eval2d(args.num_classes, args.ckp, metric, args.device, args.workspace)
+        #metric = Metric_AUC()
+        metric = DiceLoss(num_of_classes=args.num_classes)
+        tran = transform3d.data_augumentation_2d(288)
+        eval2d(args.num_classes, args.ckp, metric, args.device, args.workspace, transform=tran, vis=True)
     elif args.action == "eval3d":
         metric = Metric_AUC()
         eval3d(args.num_classes, args.ckp, metric, args.device, args.workspace)       

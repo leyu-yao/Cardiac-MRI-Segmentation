@@ -205,7 +205,14 @@ def remap_nii(fn, gain=1):
     #nib.save(img, os.path.join('build','test4d.nii.gz'))
     nib.save(img, fn)
 
-
+def remap_label_val(y, numl1, numl2):
+    '''
+    y: numpy or tensor as D,H,W
+    '''
+    for v1, v2 in zip(numl1, numl2):
+        y[y==v1] = v2
+    
+    return y
      
 if __name__ == '__main__':
     parse = argparse.ArgumentParser()
