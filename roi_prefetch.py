@@ -5,7 +5,7 @@ import sys
 import matplotlib.pyplot as plt
 import nibabel as nib 
 
-
+import util
 
 
 def roi_detect_np(y):
@@ -14,6 +14,8 @@ def roi_detect_np(y):
     y D,H,W np.array
 
     return (slice(), slice(), slice())
+
+    return value usage  x[res]
     '''
 
 
@@ -34,4 +36,20 @@ def roi_train_prerare(dst_dir, src_dir, num_classes=8):
     get one-hot 
     output numpy arr in file system
     '''
-    pass
+    img_msk_list = util.make_dataset(src_dir)
+
+    idx = 0
+
+
+    for x_path, y_path in img_msk_list: 
+
+        img_nib = nib.load(x_path)
+        mask_nib = nib.load(y_path)
+
+        # np.array D,H,W
+        x = img_nib.get_fdata().astype(np.float32)
+        y = mask_nib.get_fdata().astype(np.float32)
+
+        roi_slice = roi_detect_np(y)
+
+        
