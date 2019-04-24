@@ -280,7 +280,7 @@ def generate_2d_slices_numpy(dst, src, visualize=False):
         mask = mask.get_fdata()
         
         # one hot
-        mask = util.one_hot(mask, num_of_class=5)
+        mask = util.one_hot(mask, num_of_class=8)
 
         # add axis
         img = img[np.newaxis,:,:,:]
