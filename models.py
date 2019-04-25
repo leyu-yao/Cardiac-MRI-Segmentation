@@ -212,30 +212,30 @@ class Unet2d(nn.Module):
     def forward(self,x):
         #W = x.shape[2]
         #print(W)
-        c1=self.conv1(x)
+        c1=self.conv1(x);del x
         p1=self.pool1(c1)
-        c2=self.conv2(p1)
+        c2=self.conv2(p1);del p1
         p2=self.pool2(c2)
-        c3=self.conv3(p2)
+        c3=self.conv3(p2);del p2
         p3=self.pool3(c3)
-        c4=self.conv4(p3)
+        c4=self.conv4(p3);del p3
         p4=self.pool4(c4)
-        c5=self.conv5(p4)
+        c5=self.conv5(p4);del p4
         up_6= self.up6(c5)
-        merge6 = torch.cat([up_6, c4], dim=1)
-        c6=self.conv6(merge6)
-        up_7=self.up7(c6)
-        merge7 = torch.cat([up_7, c3], dim=1)
-        c7=self.conv7(merge7)
-        up_8=self.up8(c7)
-        merge8 = torch.cat([up_8, c2], dim=1)
-        c8=self.conv8(merge8)
-        up_9=self.up9(c8)
-        merge9=torch.cat([up_9,c1],dim=1)
-        c9=self.conv9(merge9)
-        c10=self.conv10(c9)
+        merge6 = torch.cat([up_6, c4], dim=1);del c4, up_6
+        c6=self.conv6(merge6);del merge6
+        up_7=self.up7(c6);del c6
+        merge7 = torch.cat([up_7, c3], dim=1);del c3, up_7
+        c7=self.conv7(merge7);del merge7
+        up_8=self.up8(c7);del c7
+        merge8 = torch.cat([up_8, c2], dim=1);del up_8, c2
+        c8=self.conv8(merge8);del merge8
+        up_9=self.up9(c8);del c8
+        merge9=torch.cat([up_9,c1],dim=1);del up_9, c1
+        c9=self.conv9(merge9);del merge9
+        c10=self.conv10(c9);del c9
         #out = nn.Sigmoid()(c10)
-        out = nn.Softmax(dim=1)(c10)
+        out = nn.Softmax(dim=1)(c10);del c10
         return out
 
 
