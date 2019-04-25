@@ -139,7 +139,7 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False,weight_name=weight_name)
 
 
-def eval2d(num_classes, ckp, metrics, device='cuda', workspace="./eval2d", transform=None, vis=False):
+def eval2d(num_classes, ckp, metrics, device='cuda', workspace="./eval2d", transform=None, vis=False, output_dir=None):
     '''
     evaluation on eval-test
     metrics is required has method __call__(y_pred_tensor, y_true_tensor)
@@ -157,14 +157,15 @@ def eval2d(num_classes, ckp, metrics, device='cuda', workspace="./eval2d", trans
 
     with torch.no_grad():
         average_score = 0
-        for x,y in dataloaders:
+        for _, (x,y) in enumerate(dataloaders):
             outputs = model(x.to(device))
             labels = y.to(device)
             score = metrics(outputs, labels)
             average_score += score
             print("score = %0.3f" % score)
 
-            if vis:
+            if vis or output_dir:
+                plt.figure(1)
                 plt.subplot(1,3,1)
                 plt.imshow(x[0,0,:,:].cpu().numpy())
                 
@@ -175,8 +176,13 @@ def eval2d(num_classes, ckp, metrics, device='cuda', workspace="./eval2d", trans
                 
                 plt.subplot(1,3,3)
                 plt.imshow(outputs[0].argmax(dim=0).cpu().numpy()*150)
-                
-                plt.show()
+                if output_dir:
+                    save_path = os.path.join(output_dir, "%d.png"%_)
+                    plt.savefig(save_path)               
+                if vis:
+                    plt.show()
+
+                    
 
 
         print("average score on evaluation set is %0.3f" % (average_score/dt_size))
@@ -275,7 +281,9 @@ if __name__ == "__main__":
     parse.add_argument("--num_classes", type=int, default=5)
     parse.add_argument("--workspace", type=str)
     parse.add_argument("--weight_name", type=str, default=None)
-
+    parse.add_argument("--vis", type=bool, default=False)
+    parse.add_argument("--output_dir", type=str, default=None)
+    
     args = parse.parse_args()
 
     if args.action == "train2d":
@@ -288,7 +296,9 @@ if __name__ == "__main__":
         #metric = Metric_AUC()
         metric = DiceLoss(num_of_classes=args.num_classes)
         tran = transform3d.data_augumentation_2d(288)
-        eval2d(args.num_classes, args.ckp, metric, args.device, args.workspace, transform=tran, vis=False)
+        eval2d(args.num_classes, args.ckp, metric, args.device, 
+               args.workspace, transform=tran, vis=args.vis,
+               output_dir=args.output_dir)
     elif args.action == "eval3d":
         metric = Metric_AUC()
         eval3d(args.num_classes, args.ckp, metric, args.device, args.workspace)       
