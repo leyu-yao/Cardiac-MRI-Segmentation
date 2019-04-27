@@ -25,8 +25,8 @@ def broswe_data_shape(root):
 class Resizer(object):
     def __init__(self, shape):
         #self.w, self.h = shape
-        self.MP = torch.nn.AdaptiveMaxPool2d(shape).to('cuda')
-
+        self.MPy = torch.nn.AdaptiveMaxPool2d(shape).to('cuda')
+        self.MPx = torch.nn.AdaptiveAvgPool2d(shape).to('cuda')
     def __call__(self, x, y):
         '''
         takes x, y numpy C,D,H
@@ -35,7 +35,7 @@ class Resizer(object):
             x_t = torch.from_numpy(x[np.newaxis, :, :, :]).to('cuda')
             y_t = torch.from_numpy(y[np.newaxis, :, :, :]).to('cuda')
 
-            return self.MP(x_t)[0].cpu().numpy(), self.MP(y_t)[0].cpu().numpy()
+            return self.MPx(x_t)[0].cpu().numpy(), self.MPy(y_t)[0].cpu().numpy()
 
 def generate_z_slices(dst_dir, src_dir, shapes, visualize):
     img_lst = util.make_dataset(src_dir)
@@ -215,5 +215,9 @@ def generate_y_slices(dst_dir, src_dir, shapes, visualize):
                 idx += 1
 
 
+
+
 if __name__ == "__main__":
+    shapes_main = [(128,128),(192,192),(256,256),(320,320)]
+    shapes_side = [(256,128),(512,128),(256,140),(256,192),(320,128)]
     generate_z_slices('./train_z', './train', [(128, 128),(256,256)], False)
