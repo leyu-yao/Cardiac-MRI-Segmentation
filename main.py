@@ -76,16 +76,16 @@ def train(num_classes, batch_size, num_epochs, workspace="./raw", device='cuda',
     device
     transform
     '''
-    model = models.Unet3d(1, num_classes).to(device)
+    model = models.Unet3d_depth5(1, num_classes).to(device)
     # load weights
     if ckp is not None:
         model.load_state_dict(torch.load(ckp, map_location=device))
 
     criterion = losses.DiceLoss(num_of_classes=num_classes, device=device)
     #optimizer = optim.SGD(model.parameters(), lr=1e-3, weight_decay=1e-4)
-    optimizer = optim.Adam(model.parameters(), weight_decay=5e-4)
+    optimizer = optim.Adam(model.parameters(), weight_decay=1e-4)
     ds = dataset.Dataset(workspace, transform=transform, num_classes=num_classes)
-    dataloaders = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=0)
+    dataloaders = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=4)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False, weight_name)
 
 
@@ -95,7 +95,7 @@ def test(num_classes, ckp, metrics, device='cuda;', workspace="./test", transfor
     metrics is required has method __call__(y_pred_tensor, y_true_tensor)
     ckp is path for weights of the model
     '''
-    model = models.Unet3d(1, num_classes).to(device)
+    model = models.Unet3d_depth5(1, num_classes).to(device)
     model.load_state_dict(torch.load(ckp, map_location=device))
     ds = dataset.Dataset(workspace, transform=transform, num_classes=num_classes)
     dataloaders = DataLoader(ds, batch_size=1)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     parse.add_argument("--num_epochs", type=int, default=5)
     parse.add_argument("--device", type=str, default="cuda")
     parse.add_argument("--para", type=bool, default=False)
-    parse.add_argument("--num_classes", type=int, default=5)
+    parse.add_argument("--num_classes", type=int, default=8)
     parse.add_argument("--workspace", type=str)
     parse.add_argument("--cuda_index", type=str, default='0')
     parse.add_argument("--resolution", nargs='+', type=int, default=(160,160,114))
@@ -143,7 +143,8 @@ if __name__ == "__main__":
     if args.action == "train":
         #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         device = torch.device(args.device)
-        tran1 = transforms.SmartDownSample((args.resolution))
+        #tran1 = transforms.SmartDownSample((args.resolution))
+        tran1 = transforms.FitShape(64)
         tran2 = transforms.Normalization()
         tran = transforms.ComposedTransformer(tran1, tran2)
         train(args.num_classes, args.batch_size, args.num_epochs, 
@@ -152,7 +153,8 @@ if __name__ == "__main__":
 
     elif args.action == "test":
         device = torch.device(args.device)
-        tran1 = transforms.SmartDownSample((args.resolution))
+        #tran1 = transforms.SmartDownSample((args.resolution))
+        tran1 = transforms.FitShape(64)
         tran2 = transforms.Normalization()
         tran = transforms.ComposedTransformer(tran1, tran2)
         metric = metrics.Metric_AUC()

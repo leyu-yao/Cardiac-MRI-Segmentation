@@ -141,6 +141,35 @@ class RandomTransformer(object):
 
         return X, Y
 
+class FitShape(object):
+    '''
+    down sample x and y at the same time
+    this is called smart because it keeps the d,h,w ratio. 
+    '''
+    def __init__(self, base):
+        '''
+        object_size (D, H, W) tuple
+        '''
+        self.base = base
+
+
+
+    def __call__(self, x, y):
+        #input C,D,H,W
+        C,D,H,W = x.shape
+        #input_size = D * H * W
+        #ratio = np.cbrt(input_size / self.memory_size)
+
+        def base_floor(x, base=8):
+            mo = x % base
+            return int(x - mo)
+
+        D_desired = base_floor(D, base=self.base)
+        H_desired = base_floor(H, base=self.base)
+        W_desired = base_floor(W, base=self.base)
+
+        maxpool = torch.nn.AdaptiveMaxPool3d((D_desired, H_desired, W_desired))
+        return maxpool(x.unsqueeze(0)).squeeze(0), maxpool(y.unsqueeze(0)).squeeze(0)
 
 if __name__ == "__main__":
     X = torch.rand(1,100,100,20)
