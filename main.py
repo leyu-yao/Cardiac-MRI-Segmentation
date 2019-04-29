@@ -85,11 +85,11 @@ def train(num_classes, batch_size, num_epochs, workspace="./raw", device='cuda',
     #optimizer = optim.SGD(model.parameters(), lr=1e-3, weight_decay=1e-4)
     optimizer = optim.Adam(model.parameters(), weight_decay=1e-4)
     ds = dataset.Dataset(workspace, transform=transform, num_classes=num_classes)
-    dataloaders = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=4)
+    dataloaders = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False, weight_name)
 
 
-def test(num_classes, ckp, metrics, device='cuda;', workspace="./test", transform=None, vis=False):
+def test(num_classes, ckp, metrics, device='cuda', workspace="./test", transform=None, vis=False):
     '''
     evaluation on eval-test
     metrics is required has method __call__(y_pred_tensor, y_true_tensor)
@@ -143,8 +143,8 @@ if __name__ == "__main__":
     if args.action == "train":
         #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         device = torch.device(args.device)
-        #tran1 = transforms.SmartDownSample((args.resolution))
-        tran1 = transforms.FitShape(64)
+        tran1 = transforms.SmartDownSample((args.resolution), 64)
+        #tran1 = transforms.FitShape(32)
         tran2 = transforms.Normalization()
         tran = transforms.ComposedTransformer(tran1, tran2)
         train(args.num_classes, args.batch_size, args.num_epochs, 
@@ -153,8 +153,8 @@ if __name__ == "__main__":
 
     elif args.action == "test":
         device = torch.device(args.device)
-        #tran1 = transforms.SmartDownSample((args.resolution))
-        tran1 = transforms.FitShape(64)
+        #tran1 = transforms.SmartDownSample((args.resolution), 64)
+        #tran1 = transforms.FitShape(32)
         tran2 = transforms.Normalization()
         tran = transforms.ComposedTransformer(tran1, tran2)
         metric = metrics.Metric_AUC()

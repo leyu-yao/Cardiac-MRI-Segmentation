@@ -60,13 +60,13 @@ class SmartDownSample(object):
     down sample x and y at the same time
     this is called smart because it keeps the d,h,w ratio. 
     '''
-    def __init__(self, object_size):
+    def __init__(self, object_size, base):
         '''
         object_size (D, H, W) tuple
         '''
         self.object_size = object_size
         self.memory_size = object_size[0] * object_size[1] *object_size[2]
-
+        self.base = base
 
 
     def __call__(self, x, y):
@@ -77,11 +77,11 @@ class SmartDownSample(object):
 
         def base_floor(x, base=8):
             mo = x % base
-            return int(x - mo)
+            return int(x - mo) if x-mo>0 else base
 
-        D_desired = base_floor(D//ratio)
-        H_desired = base_floor(H//ratio)
-        W_desired = base_floor(W//ratio)
+        D_desired = base_floor(D//ratio, self.base)
+        H_desired = base_floor(H//ratio, self.base)
+        W_desired = base_floor(W//ratio, self.base)
 
         maxpool = torch.nn.AdaptiveMaxPool3d((D_desired, H_desired, W_desired))
         return maxpool(x.unsqueeze(0)).squeeze(0), maxpool(y.unsqueeze(0)).squeeze(0)
