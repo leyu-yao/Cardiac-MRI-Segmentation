@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 import argparse
 import time
 import itertools
+import argparse
 
 import util
 import models
-
+import main_rev
 
 
 def broswe_data_shape(root):
@@ -214,10 +215,41 @@ def generate_y_slices(dst_dir, src_dir, shapes, visualize):
                 np.save(mask_name, y_s)
                 idx += 1
 
+def Generate():
+    shapes_main = [(256,256)]
+    shapes_side = [(256,128)]
+    generate_z_slices('./train_z', './train', shapes_main, False)
+    generate_x_slices('./train_x', './train', shapes_side, False)
+    generate_y_slices('./train_y', './train', shapes_side, False)
 
+def train_orthogonality(batch_size, num_epochs, workspace, weight_name, ckp):
+    #tran = transform3d.data_augumentation_2d(288)
 
+    main_rev.train2d(num_classes=8, batch_size=batch_size, num_epochs=num_epochs, 
+    workspace=workspace, device='cuda', transform=None,weight_name=weight_name, ckp=ckp)
 
 if __name__ == "__main__":
-    shapes_main = [(128,128),(192,192),(256,256),(320,320)]
-    shapes_side = [(256,128),(512,128),(256,140),(256,192),(320,128)]
-    generate_z_slices('./train_z', './train', [(128, 128),(256,256)], False)
+    # shapes_main = [(128,128),(192,192),(256,256),(320,320)]
+    # shapes_side = [(256,128),(512,128),(256,140),(256,192),(320,128)]
+    # generate_z_slices('./train_z', './train', [(128, 128),(256,256)], False)
+
+    parse = argparse.ArgumentParser()
+
+    parse.add_argument("action", type=str)
+    parse.add_argument("--workspace", type=str)
+    parse.add_argument("--ckp", type=str, help="the path of model weight file")
+    parse.add_argument("--num_epochs", type=int, default=25)
+    parse.add_argument("--batch_size", type=int, default=25)
+    args = parse.parse_args()
+
+    if args.action == 'Generate':
+        Generate()
+
+    elif args.action == 'train_z':
+        train_orthogonality(args.batch_size, args.num_epochs, './train_z', '2d_z', args.ckp)
+    
+    elif args.action == 'train_x':
+        train_orthogonality(args.batch_size, args.num_epochs, './train_x', '2d_x', args.ckp)
+
+    elif args.action == 'train_y':
+        train_orthogonality(args.batch_size, args.num_epochs, './train_y', '2d_y', args.ckp)
