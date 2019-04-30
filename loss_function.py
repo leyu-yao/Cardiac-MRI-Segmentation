@@ -6,7 +6,7 @@ import numpy as np
 import sys
 from torch import nn
 
-from timeTick import timeTicker
+#from timeTick import timeTicker
 # Intersection = dot(A, B)
 # Union = dot(A, A) + dot(B, B)
 # The Dice loss function is defined as
@@ -147,7 +147,7 @@ class DiceLossFast(nn.Module):
     def __init__(self):
         super(DiceLossFast, self).__init__()
 
-    @timeTicker
+    #@timeTicker
     def forward(self, pred, target):
         
         smooth = 1
@@ -183,7 +183,7 @@ class DiceLoss(nn.Module):
         else:
             self.weights = weights / weights.sum()
         
-    @timeTicker
+    #@timeTicker
     def forward(self, input, target):
         
         #pred_one_hot = one_hot(input)
