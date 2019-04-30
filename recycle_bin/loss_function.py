@@ -6,7 +6,7 @@ import numpy as np
 import sys
 from torch import nn
 
-#from timeTick import timeTicker
+from timeTick import timeTicker
 # Intersection = dot(A, B)
 # Union = dot(A, A) + dot(B, B)
 # The Dice loss function is defined as
@@ -147,7 +147,7 @@ class DiceLossFast(nn.Module):
     def __init__(self):
         super(DiceLossFast, self).__init__()
 
-    #@timeTicker
+    @timeTicker
     def forward(self, pred, target):
         
         smooth = 1
@@ -183,7 +183,7 @@ class DiceLoss(nn.Module):
         else:
             self.weights = weights / weights.sum()
         
-    #@timeTicker
+    @timeTicker
     def forward(self, input, target):
         
         #pred_one_hot = one_hot(input)
@@ -225,6 +225,7 @@ class CrossEntropyDiceLoss(nn.Module):
         else:
             self.weights_for_class = weights_for_class / weights_for_class.sum()
             
+    @timeTicker
     def forward(self, input, target):
 
         # calculate dice loss
@@ -246,4 +247,30 @@ class CrossEntropyDiceLoss(nn.Module):
     
         return self.dice_loss * float(self.weights[0]) + self.cross_entropy*float(self.weights[1])
     
+    
+class CrossEntropyDiceLossFast(nn.Module):
+    
+    def __init__(self,  w_dice=0.5, w_cross_entropy=0.5):
+        super(CrossEntropyDiceLossFast, self).__init__()
+        self.w_dice = w_dice
+        self.w_cross_entropy = w_cross_entropy
+            
+    @timeTicker
+    def forward(self, input, target):
+
+        # calculate dice loss
+        dl = DiceLossFast()(input, target)
+         
+       
+        # calculate cross entropy
+#        out = input.view(-1).clamp(1e-3,1)
+#        target = target.view(-1)
+#        log_prob = torch.log(out)/target.sum()
+#        self.cross_entropy = -torch.dot(target, log_prob)
+        
+        ce = torch.nn.functional.cross_entropy(input, target.argmax(dim=1))
+        
+
+    
+        return dl * self.w_dice + ce * self.w_cross_entropy
         

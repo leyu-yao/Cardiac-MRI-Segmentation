@@ -34,7 +34,7 @@ class test_on_2dUnet_Z(object):
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
         self.criterion = loss_function.DiceLoss(num_classes)
-        self.mp = torch.nn.AdaptiveMaxPool2d(resolution)
+        self.mp = torch.nn.Upsample(size=resolution, mode='bilinear')
 
     def __call__(self):
         with torch.no_grad():
@@ -50,7 +50,7 @@ class test_on_2dUnet_Z(object):
             
                 (D, H, W) = img.shape
                 
-                up_sample = torch.nn.AdaptiveMaxPool2d((D, H))
+                up_sample = torch.nn.Upsample(size=(D, H))
 
                 # transform to np  d,h,w
                 img = img.get_fdata().astype(np.float32)

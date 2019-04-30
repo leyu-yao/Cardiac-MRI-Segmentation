@@ -13,7 +13,7 @@ import time
 # import project modules
 from models import SmallUnet3d, Unet3d, Unet2d, SmallSMallUnet3d
 from dataset import Dataset3d, Dataset2d
-from loss_function import CrossEntropy3d, DiceLoss ,CrossEntropyDiceLoss
+from losses import  DiceLoss ,CrossEntropyDiceLoss
 from util import fix_unicode_bug
 import util
 from metrics import Metric_AUC
@@ -85,7 +85,7 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     transform
     '''
     model = Unet3d(1, num_classes).to(device)
-    criterion = DiceLoss(num_of_classes=num_classes)
+    criterion = DiceLoss()
     optimizer = optim.Adam(model.parameters())
     dataset = Dataset3d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
@@ -105,7 +105,7 @@ def train_roi(batch_size, num_epochs, workspace="./roi_train", device='cuda', tr
     model = SmallSMallUnet3d(1, 1).to(device)
     
     #nn.MSELoss()
-    #criterion = CrossEntropyDiceLoss(num_of_classes=1)
+    #criterion = CrossEntropyDiceLoss()
     criterion = nn.L1Loss()
     
     optimizer = optim.Adam(model.parameters())
@@ -131,7 +131,7 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     if ckp is not None:
         model.load_state_dict(torch.load(ckp, map_location=device))
 
-    criterion = DiceLoss(num_of_classes=num_classes)
+    criterion = CrossEntropyDiceLoss()
     #criterion = torch.nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), weight_decay=1e-5)
     dataset = Dataset2d(workspace, transform=transform)
@@ -294,7 +294,7 @@ if __name__ == "__main__":
         train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)
     elif args.action == "eval2d":
         #metric = Metric_AUC()
-        metric = DiceLoss(num_of_classes=args.num_classes)
+        metric = DiceLoss()
         tran = transform3d.data_augumentation_2d(288)
         eval2d(args.num_classes, args.ckp, metric, args.device, 
                args.workspace, transform=tran, vis=args.vis,

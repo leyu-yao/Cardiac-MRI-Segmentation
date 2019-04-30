@@ -26,8 +26,8 @@ def broswe_data_shape(root):
 class Resizer(object):
     def __init__(self, shape):
         #self.w, self.h = shape
-        self.MPy = torch.nn.AdaptiveMaxPool2d(shape).to('cuda')
-        self.MPx = torch.nn.AdaptiveAvgPool2d(shape).to('cuda')
+        self.MPy = torch.nn.Upsample(size=shape).to('cuda')
+        self.MPx = torch.nn.Upsample(size=shape, mode='bilinear').to('cuda')
     def __call__(self, x, y):
         '''
         takes x, y numpy C,D,H

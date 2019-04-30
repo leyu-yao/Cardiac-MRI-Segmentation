@@ -22,7 +22,7 @@ def timeTicker(func):
         back = func(*args, **kwargs)
         t1 = time.time()
         t_exe = t1 - t0
-        print("%s takes %.3f" % (func.__name__, t_exe))
+        print("%s takes %.6f" % (func.__name__, t_exe))
         return back
     return wrapper
 # --end of exeTime
