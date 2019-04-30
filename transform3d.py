@@ -59,7 +59,14 @@ class DummyTransform(object):
     def __call__(self, X, Y):
         return X, Y
 
+class Normalization(object):
+    '''
+    normalize sample x, does not affect y 
+    '''
+    def __call__(self, x, y):
+        return (x - x.mean()) / x.std(), y
 
+        
 class ComposedTransformer(object):
     '''
     ComposedTransformer

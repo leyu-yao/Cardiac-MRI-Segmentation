@@ -131,9 +131,9 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     if ckp is not None:
         model.load_state_dict(torch.load(ckp, map_location=device))
 
-    criterion = CrossEntropyDiceLoss()
+    criterion = DiceLoss()
     #criterion = torch.nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), weight_decay=1e-5)
+    optimizer = optim.Adam(model.parameters(), weight_decay=1e-4)
     dataset = Dataset2d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=8)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False,weight_name=weight_name)
