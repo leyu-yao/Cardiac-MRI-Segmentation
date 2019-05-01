@@ -214,6 +214,22 @@ def remap_label_val(y, numl1, numl2):
     
     return y
      
+
+
+def bbox_3D(img):
+
+    r = np.any(img, axis=(1, 2))
+    c = np.any(img, axis=(0, 2))
+    z = np.any(img, axis=(0, 1))
+
+    rmin, rmax = np.where(r)[0][[0, -1]]
+    cmin, cmax = np.where(c)[0][[0, -1]]
+    zmin, zmax = np.where(z)[0][[0, -1]]
+
+    return rmin, rmax, cmin, cmax, zmin, zmax
+
+
+
 if __name__ == '__main__':
     parse = argparse.ArgumentParser()
     
