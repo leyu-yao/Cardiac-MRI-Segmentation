@@ -77,14 +77,16 @@ class SmartDownSample(object):
 
         def base_floor(x, base=8):
             mo = x % base
-            return int(x - mo)
+            return int(x - mo) if (x-mo)>0 else base
 
         D_desired = base_floor(D//ratio)
         H_desired = base_floor(H//ratio)
         W_desired = base_floor(W//ratio)
 
-        maxpool = torch.nn.AdaptiveMaxPool3d((D_desired, H_desired, W_desired))
-        return maxpool(x.unsqueeze(0)).squeeze(0), maxpool(y.unsqueeze(0)).squeeze(0)
+        #maxpool = torch.nn.AdaptiveMaxPool3d((D_desired, H_desired, W_desired))
+        x_down = torch.nn.Upsample(size=(D_desired, H_desired, W_desired), mode='trilinear')
+        y_down = torch.nn.Upsample(size=(D_desired, H_desired, W_desired))
+        return x_down(x.unsqueeze(0)).squeeze(0), y_down(y.unsqueeze(0)).squeeze(0)
 
 class Normalization(object):
     '''
@@ -143,10 +145,14 @@ class RandomTransformer(object):
 
 
 if __name__ == "__main__":
-    X = torch.rand(1,100,100,20)
-    Y = torch.rand(5,100,100,20)
+    X = torch.rand(1,100,100,50)
+    Y = torch.rand(5,100,100,50)
     
-    norm = Normalization()
-    dm = DummyTransform()
-    tran = ComposedTransformer(norm)
+    tran = SmartDownSample((48,48,24))
     X, Y = tran(X, Y)
+    print(X.shape, Y.shape)
+    
+#    norm = Normalization()
+#    dm = DummyTransform()
+#    tran = ComposedTransformer(norm)
+#    X, Y = tran(X, Y)
