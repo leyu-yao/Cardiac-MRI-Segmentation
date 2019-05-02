@@ -17,7 +17,7 @@ import argparse
 
 import util
 import models
-import loss_function
+import losses
 
 
 class test_on_2dUnet_Z(object):
@@ -33,7 +33,7 @@ class test_on_2dUnet_Z(object):
         self.model = models.Unet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
-        self.criterion = loss_function.DiceLoss(num_classes)
+        self.criterion = losses.DiceLoss()
         self.mp = torch.nn.Upsample(size=resolution, mode='bilinear')
 
     def __call__(self):
@@ -76,7 +76,7 @@ class test_on_2dUnet_Z(object):
                 #score = 1 - self.criterion(out_tensor, y_tensor)
                 #print("score of %s is %0.3f" % (x_path, score))
 
-                np.save(x_path.replace('image', 'output_z_np'), out_tensor[0].cpu().numpy())
+                #np.save(x_path.replace('image', 'output_z_np'), out_tensor[0].cpu().numpy())
                 result_np = out_tensor[0].argmax(dim=0).cpu().numpy()
 
                 res = nib.Nifti1Image(result_np.astype(np.float32), affine)
@@ -100,7 +100,7 @@ class test_on_2dUnet_X(object):
         self.model = models.Unet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
-        self.criterion = loss_function.DiceLoss(num_classes)
+        self.criterion = losses.DiceLoss()
         self.mp = torch.nn.AdaptiveMaxPool2d(resolution)
 
     def __call__(self):
@@ -144,7 +144,7 @@ class test_on_2dUnet_X(object):
                 #print("score of %s is %0.3f" % (x_path, score))
 
                 
-                np.save(x_path.replace('image', 'output_x_np'), out_tensor[0].cpu().numpy())
+                #np.save(x_path.replace('image', 'output_x_np'), out_tensor[0].cpu().numpy())
 
                 result_np = out_tensor[0].argmax(dim=0).cpu().numpy()
 
@@ -169,7 +169,7 @@ class test_on_2dUnet_Y(object):
         self.model = models.Unet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
-        self.criterion = loss_function.DiceLoss(num_classes)
+        self.criterion = losses.DiceLoss()
         self.mp = torch.nn.AdaptiveMaxPool2d(resolution)
 
     def __call__(self):
@@ -213,7 +213,7 @@ class test_on_2dUnet_Y(object):
                 #print("score of %s is %0.3f" % (x_path, score))
 
                 
-                np.save(x_path.replace('image', 'output_y_np'), out_tensor[0].cpu().numpy())
+                #np.save(x_path.replace('image', 'output_y_np'), out_tensor[0].cpu().numpy())
 
                 result_np = out_tensor[0].argmax(dim=0).cpu().numpy()
 
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     parse.add_argument("axis", type=str)
     parse.add_argument("ckp", type=str)
     parse.add_argument("workspace", type=str)
-    parse.add_argument("resolution", nargs='+', type=int, default=(160,160))
+    parse.add_argument("--resolution", nargs='+', type=int, default=(256,256))
 
     args = parse.parse_args()
 
