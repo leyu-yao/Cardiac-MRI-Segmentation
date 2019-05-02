@@ -135,7 +135,7 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     #criterion = torch.nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), weight_decay=1e-4)
     dataset = Dataset2d(workspace, transform=transform)
-    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=8)
+    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=8)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False,weight_name=weight_name)
 
 

@@ -240,7 +240,7 @@ if __name__ == "__main__":
     parse.add_argument("--workspace", type=str)
     parse.add_argument("--ckp", type=str, help="the path of model weight file")
     parse.add_argument("--num_epochs", type=int, default=25)
-    parse.add_argument("--batch_size", type=int, default=25)
+    parse.add_argument("--batch_size", type=int, default=2)
     args = parse.parse_args()
 
     if args.action == 'Generate':
