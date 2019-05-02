@@ -52,7 +52,7 @@ class DiceLoss(nn.Module):
         C = pred.shape[1]
         N = pred.shape[0]
         
-        for _ in range(C):
+        for _ in range(1,C):
             
             
             pred_flat = pred[:,_].view(N,-1)
@@ -71,7 +71,7 @@ class DiceLoss(nn.Module):
             
             dice += num / den
         
-        return 1 - dice/C
+        return 1 - dice/(C-1)
     
     
 class CrossEntropyDiceLoss(nn.Module):
