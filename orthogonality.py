@@ -227,7 +227,7 @@ def train_orthogonality(batch_size, num_epochs, workspace, weight_name, ckp):
     #tran = transform3d.data_augumentation_2d(288)
     tran = transform3d.Normalization()
     main_rev.train2d(num_classes=8, batch_size=batch_size, num_epochs=num_epochs, 
-    workspace=workspace, device='cuda', transform=tran,weight_name=weight_name, ckp=ckp)
+    workspace=workspace, device='cuda', transform=None,weight_name=weight_name, ckp=ckp)
 
 if __name__ == "__main__":
     # shapes_main = [(128,128),(192,192),(256,256),(320,320)]

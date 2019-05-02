@@ -17,7 +17,7 @@ import argparse
 
 import util
 import models
-import losses
+import loss_function
 
 
 class test_on_2dUnet_Z(object):
@@ -33,7 +33,7 @@ class test_on_2dUnet_Z(object):
         self.model = models.Unet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
-        self.criterion = losses.DiceLoss()
+        self.criterion = loss_function.DiceLoss(num_classes)
         self.mp = torch.nn.Upsample(size=resolution, mode='bilinear')
 
     def __call__(self):
@@ -100,7 +100,7 @@ class test_on_2dUnet_X(object):
         self.model = models.Unet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
-        self.criterion = losses.DiceLoss()
+        self.criterion = loss_function.DiceLoss(num_classes)
         self.mp = torch.nn.AdaptiveMaxPool2d(resolution)
 
     def __call__(self):
@@ -169,7 +169,7 @@ class test_on_2dUnet_Y(object):
         self.model = models.Unet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
-        self.criterion = losses.DiceLoss()
+        self.criterion = loss_function.DiceLoss(num_classes)
         self.mp = torch.nn.AdaptiveMaxPool2d(resolution)
 
     def __call__(self):
