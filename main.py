@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import dataset
 import models
 import losses
-import metrics
+#import metrics
 import transforms
 import util
 import warnings
@@ -84,7 +84,7 @@ def train(num_classes, batch_size, num_epochs, workspace="./raw", device='cuda',
 
     criterion = losses.DiceLoss()
     #optimizer = optim.SGD(model.parameters(), lr=1e-3, weight_decay=1e-4)
-    optimizer = optim.Adam(model.parameters(), weight_decay=5e-4)
+    optimizer = optim.Adam(model.parameters(), weight_decay=1e-4)
     ds = dataset.Dataset(workspace, transform=transform, num_classes=num_classes)
     dataloaders = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=4)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False, weight_name)
