@@ -163,5 +163,5 @@ if __name__ == "__main__":
         tran1 = transforms.SmartDownSample((args.resolution))
         tran2 = transforms.Normalization()
         tran = transforms.ComposedTransformer(tran1, tran2)
-        metric = metrics.Metric_AUC()
-        test(args.num_classes, args.ckp, metric, device=device, workspace="./test", transform=tran)
+        metric = losses.DiceLoss()
+        test(args.num_classes, args.ckp, metric, device=device, workspace=args.workspace, transform=tran)

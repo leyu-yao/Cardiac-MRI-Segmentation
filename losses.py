@@ -46,27 +46,32 @@ class DiceLoss(nn.Module):
 
     #@timeTicker
     def forward(self, pred, target):
+        dice = 0
         
         smooth = 1
-        
+        C = pred.shape[1]
         N = pred.shape[0]
-        pred_flat = pred.view(N,-1)
-        target_flat = target.view(N,-1)
-        intersection = pred_flat * target_flat
         
-        num = 2 * intersection.sum() + smooth
+        for _ in range(C):
+            
+            
+            pred_flat = pred[:,_].view(N,-1)
+            target_flat = target[:,_].view(N,-1)
+            intersection = pred_flat * target_flat
+            
+            num = 2 * intersection.sum() + smooth
+            
+            #den1 = (pred_flat * pred_flat).sum()
+            #den2 = (target_flat * target_flat).sum()
         
-        #den1 = (pred_flat * pred_flat).sum()
-        #den2 = (target_flat * target_flat).sum()
-    
-        den1 = (pred_flat).sum()
-        den2 = (target_flat).sum()
+            den1 = (pred_flat).sum()
+            den2 = (target_flat).sum()
+            
+            den = den1 + den2 + smooth
+            
+            dice += num / den
         
-        den = den1 + den2 + smooth
-        
-        dice = num / den
-        
-        return 1 - dice
+        return 1 - dice/C
     
     
 class CrossEntropyDiceLoss(nn.Module):
@@ -94,3 +99,5 @@ class CrossEntropyDiceLoss(nn.Module):
 
     
         return dl * self.w_dice + ce * self.w_cross_entropy
+    
+    
