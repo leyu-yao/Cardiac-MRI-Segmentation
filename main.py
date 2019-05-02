@@ -15,7 +15,8 @@ import losses
 import metrics
 import transforms
 import util
-
+import warnings
+warnings.filterwarnings("ignore")
 #util.fix_unicode_bug()
 
 def train_model(model, criterion, optimizer, dataload, num_epochs, device, parallel, weight_name):
@@ -38,7 +39,7 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
         dt_size = len(dataload.dataset)
         epoch_loss = 0
         step = 0
-        for x, y, _, __ in dataload:
+        for x, y, x_path, affine, origin_shape,x_ori in dataload:
             step += 1
             inputs = x.to(device)
             labels = y.to(device)
@@ -81,11 +82,11 @@ def train(num_classes, batch_size, num_epochs, workspace="./raw", device='cuda',
     if ckp is not None:
         model.load_state_dict(torch.load(ckp, map_location=device))
 
-    criterion = losses.DiceLoss(num_of_classes=num_classes, device=device)
+    criterion = losses.DiceLoss()
     #optimizer = optim.SGD(model.parameters(), lr=1e-3, weight_decay=1e-4)
     optimizer = optim.Adam(model.parameters(), weight_decay=5e-4)
     ds = dataset.Dataset(workspace, transform=transform, num_classes=num_classes)
-    dataloaders = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=0)
+    dataloaders = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=4)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False, weight_name)
 
 
@@ -106,14 +107,21 @@ def test(num_classes, ckp, metrics, device='cuda;', workspace="./test", transfor
 
     with torch.no_grad():
         average_score = 0
-        for x,y,x_path,affine in dataloaders:
+        for x,y,x_path,affine,shape,x_ori in dataloaders:
             outputs = model(x.to(device))
             labels = y.to(device)
             score = metrics(outputs, labels)
             average_score += score
             print("score = %0.3f" % score)
-
+            
+            
+            # upsample
+            y_ = torch.nn.functional.upsample(outputs, size=(shape), mode='trilinear')
+            
+            
             # write file
+            util.write_nii(y_, x_path[0].replace('image','output'), affine[0,:,:].cpu().numpy())
+            
             util.write_nii(outputs, x_path[0].replace('image','output_low'), affine[0,:,:].cpu().numpy())
             util.write_nii(x, x_path[0].replace('image','input_low'), affine[0,:,:].cpu().numpy())
 

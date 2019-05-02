@@ -26,7 +26,7 @@ class Dataset(data.Dataset):
 
         img_nib = nib.load(x_path)
         mask_nib = nib.load(y_path)
-
+        origin_shape = img_nib.shape
         # np.array D,H,W
         x = img_nib.get_fdata().astype(np.float32)
         y = mask_nib.get_fdata().astype(np.float32)
@@ -34,11 +34,12 @@ class Dataset(data.Dataset):
         # to tensor  C,D,H,W
         x = torch.from_numpy(x[np.newaxis,:,:,:])
         y = torch.from_numpy(util.one_hot(y, num_classes=self.num_classes))
-
+        
+        x_ori = x.clone()
         if self.transform is not None:
             x, y = self.transform(x, y)
 
-        return x, y, x_path, img_nib.affine
+        return x, y, x_path, img_nib.affine, origin_shape, x_ori
 
     def __len__(self):
         return len(self.imgs)
