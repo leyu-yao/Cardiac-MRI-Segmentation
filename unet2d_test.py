@@ -30,7 +30,8 @@ class test_on_2dUnet_Z(object):
 
         self.imgs = util.make_dataset(workspace)
         # load model
-        self.model = models.Unet2d(1,self.num_classes).to(device)
+        #self.model = models.Unet2d(1,self.num_classes).to(device)
+        self.model = models.InceptionXDenseUnet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
         self.criterion = losses.DiceLoss()
@@ -97,7 +98,8 @@ class test_on_2dUnet_X(object):
 
         self.imgs = util.make_dataset(workspace)
         # load model
-        self.model = models.Unet2d(1,self.num_classes).to(device)
+        #self.model = models.Unet2d(1,self.num_classes).to(device)
+        self.model = models.InceptionXDenseUnet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
         self.criterion = losses.DiceLoss()
@@ -166,7 +168,8 @@ class test_on_2dUnet_Y(object):
 
         self.imgs = util.make_dataset(workspace)
         # load model
-        self.model = models.Unet2d(1,self.num_classes).to(device)
+        #self.model = models.Unet2d(1,self.num_classes).to(device)
+        self.model = models.InceptionXDenseUnet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
         self.criterion = losses.DiceLoss()
