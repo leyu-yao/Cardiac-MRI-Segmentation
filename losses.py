@@ -99,3 +99,59 @@ class CrossEntropyDiceLoss(nn.Module):
 
     
         return dl * self.w_dice + ce * self.w_cross_entropy
+
+class EdgeLoss(nn.Module):
+
+    def __init__(self):
+        super(EdgeLoss, self).__init__()
+        self.dim = None
+        
+        self.xf_2d = torch.tensor([[1, 0, -1], [2, 0, -2], [1, 0, -1]], 
+                                  dtype=torch.float32).cuda().expand(1, 1, 3, 3)
+        self.yf_2d = torch.tensor([[1, 2, 1],  [0, 0, 0],  [-1, -2, -1]], 
+                                  dtype=torch.float32).cuda().expand(1, 1, 3, 3)
+                
+    
+    def forward(self, input, target):
+
+        if self.dim is None:
+            self.dim = len(input.shape) - 2
+            
+        channels = input.shape[1]
+        
+        
+        
+        if self.dim == 2:
+            
+            sr = 0
+            
+            for c in range(channels):
+                input_c = input[:,c,:,:]
+                target_c = target[:,c,:,:]
+                
+
+            
+                edge_inp_x = torch.nn.functional.conv2d(input_c.unsqueeze(1), self.xf_2d)
+                edge_tar_x = torch.nn.functional.conv2d(target_c.unsqueeze(1), self.xf_2d)
+                edge_inp_y = torch.nn.functional.conv2d(input_c.unsqueeze(1), self.yf_2d)
+                edge_tar_y = torch.nn.functional.conv2d(target_c.unsqueeze(1), self.yf_2d)
+            
+
+                edge_inp = torch.sqrt(torch.pow(edge_inp_x, 2) + torch.pow(edge_inp_y, 2))
+                edge_tar = torch.sqrt(torch.pow(edge_tar_x, 2) + torch.pow(edge_tar_y, 2))
+                
+                sr += torch.mean((edge_inp - edge_tar).pow(2))
+                
+            return sr/channels
+
+class ComposedLoss(nn.Module):
+    def __init__(self, losses, weights):
+        super(ComposedLoss, self).__init__()
+        self.losses = losses
+        self.weights = weights
+        
+    def forward(self, input, target):
+        val = 0
+        for loss, w  in zip(self.losses, self.weights):
+            val += w * loss(input, target)
+        return val

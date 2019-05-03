@@ -13,7 +13,7 @@ import time
 # import project modules
 from models import SmallUnet3d, Unet3d, Unet2d, SmallSMallUnet3d
 from dataset import Dataset3d, Dataset2d
-from losses import  DiceLoss ,CrossEntropyDiceLoss
+import losses
 from util import fix_unicode_bug
 import util
 from metrics import Metric_AUC
@@ -131,11 +131,11 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     if ckp is not None:
         model.load_state_dict(torch.load(ckp, map_location=device))
 
-    criterion = DiceLoss()
-    #criterion = torch.nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), weight_decay=1e-4)
+    criterion = losses.DiceLoss()
+    #criterion = losses.ComposedLoss([losses.DiceLoss(),losses.EdgeLoss()],[0.5,0.5])
+    optimizer = optim.Adam(model.parameters(), weight_decay=1e-4, lr=1e-3)
     dataset = Dataset2d(workspace, transform=transform)
-    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=8)
+    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False,weight_name=weight_name)
 
 
