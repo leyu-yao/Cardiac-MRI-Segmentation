@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import time
 
 # import project modules
-from models import SmallUnet3d, Unet3d, Unet2d, SmallSMallUnet3d
+from models import SmallUnet3d, Unet3d, Unet2d, SmallSMallUnet3d, InceptionXDenseUnet2d
 from dataset import Dataset3d, Dataset2d
 import losses
 from util import fix_unicode_bug
@@ -125,17 +125,18 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     device
     transform
     '''
-    model = Unet2d(1, num_classes).to(device)
+    #model = Unet2d(1, num_classes).to(device)
+    model = InceptionXDenseUnet2d(1, num_classes).to(device)
 
     # load weights
     if ckp is not None:
         model.load_state_dict(torch.load(ckp, map_location=device))
 
     criterion = losses.DiceLoss()
-    #criterion = losses.ComposedLoss([losses.DiceLoss(),losses.EdgeLoss()],[0.5,0.5])
+    #criterion = losses.ComposedLoss([losses.DiceLoss(),losses.EdgeLoss()],[0.8,0.2])
     optimizer = optim.Adam(model.parameters(), weight_decay=1e-4, lr=1e-3)
     dataset = Dataset2d(workspace, transform=transform)
-    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=8)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False,weight_name=weight_name)
 
 
