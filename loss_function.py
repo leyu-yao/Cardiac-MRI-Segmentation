@@ -143,36 +143,39 @@ https://blog.csdn.net/a362682954/article/details/81226427
 
 class DiceLoss(nn.Module):
 
-    def __init__(self, num_of_classes, weights=None):
+    def __init__(self):
         super(DiceLoss, self).__init__()
-        self.C = num_of_classes
-        if weights is None:
-            self.weights = (torch.ones(self.C) / self.C).to('cuda')
-        else:
-            self.weights = weights / weights.sum()
-        
- 
-    def forward(self, input, target):
-        
-        #pred_one_hot = one_hot(input)
-        
- 
-        C = target.shape[1]
-        
-        #if C == 2:
-        #    return dice_loss(input[:,1], target[:,1])
-        
 
-      
-        totalLoss = 0
-         
-        for i in range(C):
-            diceLoss = dice_loss(input[:,i], target[:,i]) * self.weights[i]
-            totalLoss += diceLoss
-         
-        return totalLoss
+    #@timeTicker
+    def forward(self, pred, target):
+        dice = 0
+        
+        smooth = 1
+        C = pred.shape[1]
+        N = pred.shape[0]
+        
+        for _ in range(C):
+            
+            
+            pred_flat = pred[:,_].view(N,-1)
+            target_flat = target[:,_].view(N,-1)
+            intersection = pred_flat * target_flat
+            
+            num = 2 * intersection.sum() + smooth
+            
+            #den1 = (pred_flat * pred_flat).sum()
+            #den2 = (target_flat * target_flat).sum()
+        
+            den1 = (pred_flat).sum()
+            den2 = (target_flat).sum()
+            
+            den = den1 + den2 + smooth
+            
+            dice += num / den
+        
+        return 1 - dice/C
     
-
+    
 
 '''
 A combination of cross entropy and dice loss.

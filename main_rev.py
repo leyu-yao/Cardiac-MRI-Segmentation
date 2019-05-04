@@ -85,8 +85,8 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     transform
     '''
     model = Unet3d(1, num_classes).to(device)
-    criterion = DiceLoss(num_of_classes=num_classes)
-    optimizer = optim.Adam(model.parameters())
+    criterion = DiceLoss()
+    optimizer = optim.Adam(model.parameters(),weight_decay=1e-4)
     dataset = Dataset3d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
@@ -290,8 +290,8 @@ if __name__ == "__main__":
         tran = transform3d.data_augumentation_2d(288)
         train2d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran,weight_name=args.weight_name, ckp=args.ckp)
     elif args.action == "train3d":
-        tran = transform3d.RandomTransformer(transform3d.Transpose(), transform3d.DummyTransform())
-        train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)
+        #tran = transform3d.RandomTransformer(transform3d.Transpose(), transform3d.DummyTransform())
+        train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=None)
     elif args.action == "eval2d":
         #metric = Metric_AUC()
         metric = DiceLoss(num_of_classes=args.num_classes)

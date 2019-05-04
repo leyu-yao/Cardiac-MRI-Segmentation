@@ -400,8 +400,8 @@ if __name__ == '__main__':
     parse.add_argument("action", type=str)
     parse.add_argument("dst_dir", type=str)
     parse.add_argument("src_dir", type=str)
-    parse.add_argument("--block_size", nargs='+', type=int, default=(128,128,64))
-    parse.add_argument("--stride", nargs='+', type=int, default=(64,64,16))
+    parse.add_argument("--block_size", nargs='+', type=int, default=(96,96,96))
+    parse.add_argument("--stride", nargs='+', type=int, default=(48,48,48))
     parse.add_argument("--num_classes", type=int, default=5)
     parse.add_argument("--device", type=str, default='cuda')
 
