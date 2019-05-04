@@ -155,3 +155,10 @@ class ComposedLoss(nn.Module):
         for loss, w  in zip(self.losses, self.weights):
             val += w * loss(input, target)
         return val
+    
+if __name__== "__main__":
+    x = torch.rand(1,3,4,5).cuda()
+    y = torch.rand(1,3,4,5).cuda()
+    
+    c = DiceLoss()
+    l=c(x,y)

@@ -3,15 +3,10 @@
 """
 This module implements a timer to count execution time. 
 Usage: Add @timeTicker above a function is defined. 
-
 Example:
-
 @timeTicker
 def foo():
     pass
-
-
-
 """
 import time
 
