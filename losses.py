@@ -156,6 +156,10 @@ class ComposedLoss(nn.Module):
             val += w * loss(input, target)
         return val
     
+
+#class Hybird_Loss(nn.Module):
+
+
 if __name__== "__main__":
     x = torch.rand(1,3,4,5).cuda()
     y = torch.rand(1,3,4,5).cuda()

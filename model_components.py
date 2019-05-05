@@ -27,3 +27,18 @@ class DoubleConv3d(nn.Module):
         #y = self.bn2(y)
         y = self.rl2(y)
         return y
+
+
+class ConvBlock(nn.Module):
+    def __init__(self, in_ch, out_ch):
+        super(ConvBlock, self).__init__()
+
+        self.conv = nn.Conv3d(in_ch, out_ch, 3, padding=1)
+        self.bn = nn.BatchNorm3d(out_ch)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        y = self.conv(x)
+        y = self.bn(y)
+        y = self.relu(y)
+        return y
