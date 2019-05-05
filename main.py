@@ -91,7 +91,35 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     '''
     model = Unet3d(1, num_classes).to(device)
     criterion = losses.DiceLoss()
-    optimizer = optim.Adam(model.parameters())
+    
+    # %% use different lr
+    conv2_conv2_params = list(map(id, model.conv2.conv2.parameters()))
+    conv3_conv2_params = list(map(id, model.conv3.conv2.parameters()))
+    conv4_conv1_params = list(map(id, model.conv4.conv1.parameters()))
+    conv4_conv2_params = list(map(id, model.conv4.conv2.parameters()))
+    
+    union = conv2_conv2_params+conv3_conv2_params+conv4_conv1_params+conv4_conv2_params
+    
+    base_params = filter(lambda p: id(p) not in union, model.parameters())
+    
+    optimizer = torch.optim.SGD([
+                {'params': base_params},
+                {'params': model.conv2.conv2.parameters(), 'lr': 1e-6},
+                {'params': model.conv3.conv2.parameters(), 'lr': 1e-5},
+                {'params': model.conv4.conv1.parameters(), 'lr': 1e-5},
+                {'params': model.conv4.conv2.parameters(), 'lr': 1e-4}],
+                lr=1e-3, momentum=0.9
+                )
+
+    
+    
+    
+    # %% origin
+    
+    # optimizer = optim.Adam(model.parameters())
+    
+    # %%
+    
     dataset = Dataset3d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=2)
     train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
