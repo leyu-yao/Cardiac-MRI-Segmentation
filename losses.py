@@ -172,9 +172,9 @@ class wCross(nn.Module):
             n = (target_label == _).sum()
             weight[_] = 1 - n / voxel
 
-        loss = torch.nn.functional.cross_entropy(input, target_label, weight=weight)
+        loss = torch.nn.functional.nll_loss(torch.log(input), target_label, weight=weight)
 
-        return loss 
+        return loss
 
 
 # %% mDSC
@@ -184,30 +184,34 @@ class mDSC(nn.Module):
 
     def forward(self, output, target):
         N, C, D, H, W = output.shape
-
+        #output_ = torch.nn.Softmax(dim=1)(output)
         voxels = D * H * W
 
-        eps = 1e-6
+        eps = 1e-5
         out = 0
         for n in range(N):
             for c in range(C):
                 #up = 2 / voxels * (output[n, c] * target[n, c]).sum()
                 up = 2 * (output[n, c] * target[n, c]).sum()
-                down = (output[n, c] * output[n, c]).sum() + (target[n, c] * target[n, c]).sum() + 1e-6
-                out += - up / down
+                down = (output[n, c] * output[n, c]).sum() + (target[n, c] * target[n, c]).sum() + eps
+                out +=  up / down
 
-        return out / N
+        return 1 - out / N / C
 
 
 # %% hybird Loss
 class Hybird_Loss(nn.Module):
-    def __init__(self, w4Cross=0.1, w4mDSC=0.9):
+    def __init__(self, w4Cross=0.0, w4mDSC=1):
         super(Hybird_Loss, self).__init__()
         self.w4Cross = w4Cross
         self.w4mDSC = w4mDSC
 
     def forward(self, output, target):
-        return self.w4Cross * wCross()(output, target) + self.w4mDSC * mDSC()(output, target)
+        #return self.w4Cross * wCross()(output, target) + self.w4mDSC * mDSC()(output, target)
+        return self.w4mDSC * mDSC()(output, target)
+        #return self.w4Cross * wCross()(output, target)
+
+
 
 
 # %% side loss

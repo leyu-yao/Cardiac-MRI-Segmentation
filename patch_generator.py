@@ -107,7 +107,7 @@ def generate(dst, src, block_size, stride, num_classes):
                         
                         tran=transforms.Normalization()
                         block_img,_ = tran(block_img,None)
-                        # if (block_mask[0,:,:,:]==1).all():
+                        #if (block_mask[0,:,:,:]==1).all():
                         #     pbar.update()
                         #     continue
                         
@@ -117,11 +117,11 @@ def generate(dst, src, block_size, stride, num_classes):
                         np.save(img_name, block_img)
                         np.save(mask_name, block_mask)
                         
-                        img_wb = nib.Nifti1Image(block_img[0],np.eye(4))
-                        nib.save(img_wb, '%d_image.nii.gz'%idx)
+                        #img_wb = nib.Nifti1Image(block_img[0],np.eye(4))
+                        #nib.save(img_wb, '%d_image.nii.gz'%idx)
                         
-                        img_wb = nib.Nifti1Image(np.argmax(block_mask,axis=0).astype(np.int32),np.eye(4))
-                        nib.save(img_wb, '%d_label.nii.gz'%idx)
+                        #img_wb = nib.Nifti1Image(np.argmax(block_mask,axis=0).astype(np.int32),np.eye(4))
+                        #nib.save(img_wb, '%d_label.nii.gz'%idx)
                         
                         pbar.update()
 

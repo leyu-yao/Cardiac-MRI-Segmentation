@@ -65,7 +65,7 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
             time_now = time.time()
             t_passed = time_now - time_start
             work_load = step+1 + dt_size * (epoch - 1)
-            sys.stdout.write("\rIn epoch %d, %d/%d,train_loss:%0.6f, passed :%.1fs, estimated %.1fs" % (epoch, 
+            sys.stdout.write("\rIn epoch %d, %d/%d,train_loss:%0.6f, passed :%.1fs, estimated %.1fs     " % (epoch, 
                     step, (dt_size - 1) // dataload.batch_size + 1, 
                     loss.item(), t_passed,
                     t_passed / work_load * (total_work_laod - work_load)))
@@ -81,7 +81,7 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
 
 
 
-def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='cuda', transform=None):
+def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='cuda', transform=None, weight_name=None):
     '''
     @construct dataloader, criterion, optimizer, construct and train a 3d model
     @input
@@ -130,7 +130,7 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     
     dataset = Dataset3d(workspace, transform=transform)
     dataloaders = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=2)
-    train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False)
+    train_model(model, criterion, optimizer, dataloaders, num_epochs, device, False, weight_name=weight_name)
 
 
 def eval3d(num_classes, ckp, metrics, device='cuda', workspace="./eval3d", transform=None, vis=False):
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     if args.action == "train3d":
         tran = transforms.RandomFlip()
         #tran = transform3d.RandomTransformer(transform3d.Transpose(), transform3d.DummyTransform())
-        train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)
+        train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran, weight_name=args.weight_name)
     
     elif args.action == "eval3d":
         #metric = Metric_AUC()

@@ -74,7 +74,7 @@ class DSUnet3d(nn.Module):
         super(DSUnet3d, self).__init__()
         self.name = "DSUnet3d"
 
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=False)
 
         # %% downsample path
 
@@ -125,15 +125,15 @@ class DSUnet3d(nn.Module):
         self.bn9a = nn.BatchNorm3d(32)
 
         self.conv9b = nn.Conv3d(32, out_ch, 3, padding=1)
-        #self.bn9b = nn.BatchNorm3d(out_ch)
+        self.bn9b = nn.BatchNorm3d(out_ch)
 
         # %%side outputs
         self.side1 = nn.Conv3d(256, out_ch, 3, padding=1) #1/8
-        #self.bns1 = nn.BatchNorm3d(out_ch)
+        self.bns1 = nn.BatchNorm3d(out_ch)
         self.side2 = nn.Conv3d(128, out_ch, 3, padding=1) #1/4
-        #self.bns2 = nn.BatchNorm3d(out_ch)
+        self.bns2 = nn.BatchNorm3d(out_ch)
         self.side3 = nn.Conv3d(128, out_ch, 3, padding=1) #1/2
-        #self.bns3 = nn.BatchNorm3d(out_ch)
+        self.bns3 = nn.BatchNorm3d(out_ch)
 
 
     def forward(self,x):
@@ -167,15 +167,15 @@ class DSUnet3d(nn.Module):
 
         u4 = self.unpool4(c8)
 
-        #c9 = self.relu(self.bn9b(self.conv9b(self.relu(self.bn9a(self.conv9a(torch.cat([u4, c1], dim=1)))))))
-        c9 = self.relu(self.conv9b(self.relu(self.bn9a(self.conv9a(torch.cat([u4, c1], dim=1))))))
+        c9 = self.conv9b(self.relu(self.bn9a(self.conv9a(torch.cat([u4, c1], dim=1)))))
+        #c9 = self.relu(self.conv9b(self.relu(self.bn9a(self.conv9a(torch.cat([u4, c1], dim=1))))))
 
         out  = nn.Softmax(dim=1)(c9)
 
         # %% side path
-        side_out_1  = self.side1(c6)
-        side_out_2  = self.side2(c7)
-        side_out_3  = self.side3(c8)
+        side_out_1  =  nn.Softmax(dim=1)(self.side1(c6))
+        side_out_2  =  nn.Softmax(dim=1)(self.side2(c7))
+        side_out_3  =  nn.Softmax(dim=1)(self.side3(c8))
         return out, side_out_1, side_out_2, side_out_3
 
         
