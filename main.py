@@ -185,9 +185,9 @@ if __name__ == "__main__":
     args = parse.parse_args()
 
     if args.action == "train3d":
-        tran = transforms.Normalization()
+        tran = transforms.RandomFlip()
         #tran = transform3d.RandomTransformer(transform3d.Transpose(), transform3d.DummyTransform())
-        train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=None)
+        train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran)
     
     elif args.action == "eval3d":
         #metric = Metric_AUC()

@@ -1,5 +1,6 @@
 import numpy as np 
 import cv2
+import random
 
 class Normalization(object):
     '''
@@ -16,6 +17,19 @@ class Normalization(object):
         img_out = equ.reshape(c,d,h,w).astype(np.float32)
         
         return img_out, Y
+
+
+class RandomFlip(object):
+    def __call__(self, X, Y):
+        ran = random.randint(0,9)
+        if ran == 0:
+            return X.transpose(1,2), Y.transpose(1,2)
+        elif ran == 1:
+            return X.transpose(2,3), Y.transpose(2,3)
+        elif ran == 2:
+            return  X.transpose(1,3), Y.transpose(1,3)
+        else:
+            return X, Y
 
 
 def normlize(X):

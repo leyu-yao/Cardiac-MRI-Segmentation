@@ -107,9 +107,9 @@ def generate(dst, src, block_size, stride, num_classes):
                         
                         tran=transforms.Normalization()
                         block_img,_ = tran(block_img,None)
-                        if (block_mask[0,:,:,:]==1).all():
-                            pbar.update()
-                            continue
+                        # if (block_mask[0,:,:,:]==1).all():
+                        #     pbar.update()
+                        #     continue
                         
                         # save np file
                         img_name = os.path.join(dst, '%d_image.npy'%idx)
