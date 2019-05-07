@@ -155,14 +155,94 @@ class ComposedLoss(nn.Module):
         for loss, w  in zip(self.losses, self.weights):
             val += w * loss(input, target)
         return val
-    
 
-#class Hybird_Loss(nn.Module):
+# %% volume size weighted cross entropy
+class wCross(nn.Module):
+    def __init__(self):
+        super(wCross, self).__init__()
+
+    def forward(self, input, target):
+        
+        N,C,D,H,W = input.shape
+        target_label = target.argmax(dim=1)
+        weight = torch.zeros(C,).cuda()
+
+        voxel = D * H * W
+        for _ in range(C):
+            n = (target_label == _).sum()
+            weight[_] = 1 - n / voxel
+
+        loss = torch.nn.functional.cross_entropy(input, target_label, weight=weight)
+
+        return loss 
+
+
+# %% mDSC
+class mDSC(nn.Module):
+    def __init__(self):
+        super(mDSC, self).__init__()
+
+    def forward(self, output, target):
+        N, C, D, H, W = output.shape
+
+        voxels = D * H * W
+
+        eps = 1e-6
+        out = 0
+        for n in range(N):
+            for c in range(C):
+                #up = 2 / voxels * (output[n, c] * target[n, c]).sum()
+                up = 2 * (output[n, c] * target[n, c]).sum()
+                down = (output[n, c] * output[n, c]).sum() + (target[n, c] * target[n, c]).sum() + 1e-6
+                out += - up / down
+
+        return out / N
+
+
+# %% hybird Loss
+class Hybird_Loss(nn.Module):
+    def __init__(self, w4Cross=0.5, w4mDSC=0.5):
+        super(Hybird_Loss, self).__init__()
+        self.w4Cross = w4Cross
+        self.w4mDSC = w4mDSC
+
+    def forward(self, output, target):
+        return self.w4Cross * wCross()(output, target) + self.w4mDSC * mDSC()(output, target)
+
+
+# %% side loss
+class Side_Loss(nn.Module):
+    def __init__(self, rescale=1):
+        '''
+        rescale = 1 2 3 
+        means 2x 4x 8x of the resolution
+        '''
+        super(Side_Loss, self).__init__()
+        self.rescale = rescale
+        self.mp = nn.MaxPool3d(2, stride=2)
+
+    def forward(self, outputs, target):
+        
+        # rescale target to same size
+        y = self.mp(target)
+        for _ in range(1,self.rescale):
+            y = self.mp(y)
+    
+        return Hybird_Loss()(outputs, y)
+        
+# %% Total Loss
+class Total_Loss(nn.Module):
+    def __init__(self, b1=0.2, b2=0.4, b3=0.8):
+        super(Total_Loss, self).__init__()
+        self.b1, self.b2, self.b3 = b1, b2, b3
+
+    def forward(self, output, side1, side2, side3, target):
+        return Hybird_Loss()(output, target) + self.b1 * Side_Loss(3)(side1, target) + self.b2 * Side_Loss(2)(side2, target) + self.b3 * Side_Loss(1)(side3, target) 
 
 
 if __name__== "__main__":
     x = torch.rand(1,3,4,5).cuda()
     y = torch.rand(1,3,4,5).cuda()
     
-    c = DiceLoss()
+    c = Total_Loss()
     l=c(x,y)

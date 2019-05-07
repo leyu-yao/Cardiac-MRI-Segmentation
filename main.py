@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import time
 
 # %%import project modules
-from models import Unet3d
+from models import Unet3d, DSUnet3d
 from dataset import Dataset3d
 import losses
 
@@ -49,12 +49,15 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
             inputs = x.to(device)
             labels = y.to(device)
             # zero the parameter gradients
-            if step % 8 == 0:
-                optimizer.zero_grad()
+
+            optimizer.zero_grad()
+
+            #if step % 8 == 0:
+            #    optimizer.zero_grad()
             # forward
-            outputs = model(inputs)
+            outputs, side1, side2, side3 = model(inputs)
             
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs, side1, side2, side3, labels)
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
@@ -89,26 +92,31 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     device
     transform
     '''
-    model = Unet3d(1, num_classes).to(device)
-    criterion = losses.DiceLoss()
+    model = DSUnet3d(1, num_classes).to(device)
+    criterion = losses.Total_Loss()
     
     # %% use different lr
-    conv2_conv2_params = list(map(id, model.conv2.conv2.parameters()))
-    conv3_conv2_params = list(map(id, model.conv3.conv2.parameters()))
-    conv4_conv1_params = list(map(id, model.conv4.conv1.parameters()))
-    conv4_conv2_params = list(map(id, model.conv4.conv2.parameters()))
+    conv1_parameters = list(map(id, model.conv1.parameters()))
+    conv2_parameters = list(map(id, model.conv2.parameters()))
+    conv3a_parameters = list(map(id, model.conv3a.parameters()))
+    conv3b_parameters = list(map(id, model.conv3b.parameters()))
+    conv4a_parameters = list(map(id, model.conv4a.parameters()))
+    conv4b_parameters = list(map(id, model.conv4b.parameters()))
+
     
-    union = conv2_conv2_params+conv3_conv2_params+conv4_conv1_params+conv4_conv2_params
+    union = conv1_parameters + conv2_parameters + conv3a_parameters + conv3b_parameters + conv4a_parameters + conv4b_parameters
     
     base_params = filter(lambda p: id(p) not in union, model.parameters())
     
     optimizer = torch.optim.SGD([
                 {'params': base_params},
-                {'params': model.conv2.conv2.parameters(), 'lr': 1e-6},
-                {'params': model.conv3.conv2.parameters(), 'lr': 1e-5},
-                {'params': model.conv4.conv1.parameters(), 'lr': 1e-5},
-                {'params': model.conv4.conv2.parameters(), 'lr': 1e-4}],
-                lr=1e-3, momentum=0.9
+                {'params': model.conv1.parameters(), 'lr': 1e-6},
+                {'params': model.conv2.parameters(), 'lr': 1e-6},
+                {'params': model.conv3a.parameters(), 'lr': 1e-5},
+                {'params': model.conv3b.parameters(), 'lr': 1e-5},
+                {'params': model.conv4a.parameters(), 'lr': 1e-4},
+                {'params': model.conv4b.parameters(), 'lr': 1e-4}],
+                lr=1e-3, momentum=0.9, weight_decay=1e-4
                 )
 
     
