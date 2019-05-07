@@ -16,3 +16,12 @@ class Normalization(object):
         img_out = equ.reshape(c,d,h,w).astype(np.float32)
         
         return img_out, Y
+
+
+def normlize(X):
+    '''
+    takes np D H W  
+    out np D H W
+    '''
+    out, _ = Normalization()(X[np.newaxis, :,:,:], None)
+    return out[0]
