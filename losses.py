@@ -167,13 +167,12 @@ class wCross(nn.Module):
         target_label = target.argmax(dim=1)
         weight = torch.zeros(C,).cuda()
 
-        voxel = D * H * W
+        voxel = N * D * H * W
         for _ in range(C):
             n = (target_label == _).sum()
-            weight[_] = 1 - n / voxel
+            weight[_] = 1 - n.float() / voxel
 
         loss = torch.nn.functional.nll_loss(torch.log(input), target_label, weight=weight)
-
         return loss
 
 
@@ -201,14 +200,14 @@ class mDSC(nn.Module):
 
 # %% hybird Loss
 class Hybird_Loss(nn.Module):
-    def __init__(self, w4Cross=0.0, w4mDSC=1):
+    def __init__(self, w4Cross=0.5, w4mDSC=0.5):
         super(Hybird_Loss, self).__init__()
         self.w4Cross = w4Cross
         self.w4mDSC = w4mDSC
 
     def forward(self, output, target):
-        #return self.w4Cross * wCross()(output, target) + self.w4mDSC * mDSC()(output, target)
-        return self.w4mDSC * mDSC()(output, target)
+        return self.w4Cross * wCross()(output, target) + self.w4mDSC * mDSC()(output, target)
+        #return self.w4mDSC * mDSC()(output, target)
         #return self.w4Cross * wCross()(output, target)
 
 
