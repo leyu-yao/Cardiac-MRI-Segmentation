@@ -81,7 +81,7 @@ def train_model(model, criterion, optimizer, dataload, num_epochs, device, paral
 
 
 
-def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='cuda', transform=None, weight_name=None):
+def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='cuda', transform=None, weight_name=None, ckp=None):
     '''
     @construct dataloader, criterion, optimizer, construct and train a 3d model
     @input
@@ -93,6 +93,11 @@ def train3d(num_classes, batch_size, num_epochs, workspace="./train3d", device='
     transform
     '''
     model = DSUnet3d(1, num_classes).to(device)
+    
+    # load weights
+    if ckp is not None:
+        model.load_state_dict(torch.load(ckp, map_location=device))
+        
     criterion = losses.Total_Loss()
     
     # %% use different lr
@@ -187,7 +192,9 @@ if __name__ == "__main__":
     if args.action == "train3d":
         tran = transforms.RandomFlip()
         #tran = transform3d.RandomTransformer(transform3d.Transpose(), transform3d.DummyTransform())
-        train3d(args.num_classes, args.batch_size, args.num_epochs, args.workspace, device=args.device, transform=tran, weight_name=args.weight_name)
+        train3d(args.num_classes, args.batch_size, args.num_epochs, 
+                args.workspace, device=args.device, transform=tran, 
+                weight_name=args.weight_name, ckp=args.ckp)
     
     elif args.action == "eval3d":
         #metric = Metric_AUC()
