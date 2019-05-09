@@ -16,6 +16,8 @@ import argparse
 test_sample_idx = [1, 3, 4, 7]
 labels = ['mr_train_10%02d_label.nii.gz'%idx for idx in test_sample_idx]
 outputs = ['mr_train_10%02d_post.nii.gz'%idx for idx in test_sample_idx]
+#outputs = ['mr_train_10%02d_label.nii.gz'%idx for idx in test_sample_idx]
+
 files = [(u, v) for u, v in zip(labels, outputs)]
 
 val_output = [0, 1, 2, 3, 4, 5, 6, 7]
@@ -35,8 +37,8 @@ def calculate_jaccard(output, label):
         key = name[i]
         u = (output==val_output[i]).reshape(-1)
         v = (label==val_label[i]).reshape(-1)
-        value = spatial.distance.jaccard(u, v)
-        jaccard_score[key] = value
+        distance = spatial.distance.jaccard(u, v)
+        jaccard_score[key] = 1 - distance
     
     return jaccard_score
 
@@ -50,8 +52,8 @@ def calculate_DSC(output, label):
         key = name[i]
         u = (output==val_output[i]).reshape(-1)
         v = (label==val_label[i]).reshape(-1)
-        value = spatial.distance.dice(u, v)
-        DSC_score[key] = value
+        distance = spatial.distance.dice(u, v)
+        DSC_score[key] = 1 - distance
     
     return DSC_score
 
