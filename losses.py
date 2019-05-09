@@ -200,7 +200,7 @@ class mDSC(nn.Module):
 
 # %% hybird Loss
 class Hybird_Loss(nn.Module):
-    def __init__(self, w4Cross=0.5, w4mDSC=0.5):
+    def __init__(self, w4Cross=0.8, w4mDSC=0.2):
         super(Hybird_Loss, self).__init__()
         self.w4Cross = w4Cross
         self.w4mDSC = w4mDSC
