@@ -64,9 +64,10 @@ if __name__ == '__main__':
 
     parse.add_argument('dst', type=str)
     parse.add_argument('src', type=str)
+    parse.add_argument('--element', type=str, default='output.nii.gz')
     args = parse.parse_args()
 
-    imgs = process_folder(args.src, args.dst)
+    imgs = process_folder(args.src, args.dst, args.element)
     for in_fn, out_fn in imgs:
         process_nii_file(in_fn, out_fn)
 
