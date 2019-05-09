@@ -101,7 +101,7 @@ if __name__ == '__main__':
     parse.add_argument("action", type=str)
     parse.add_argument("--workspace", type=str)
     parse.add_argument("--block_size", nargs='+', type=int, default=(96,96,96))
-    parse.add_argument("--stride", nargs='+', type=int, default=(48,48,48))
+    parse.add_argument("--stride", nargs='+', type=int, default=(32,32,32))
     parse.add_argument("--num_classes", type=int, default=8)
     parse.add_argument("--ckp", type=str)
     #parse.add_argument("--device", type=str, default='cuda')
