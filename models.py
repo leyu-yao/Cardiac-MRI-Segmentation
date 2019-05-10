@@ -317,3 +317,74 @@ class InceptionXDenseUnet2d(nn.Module):
         out = nn.Softmax(dim=1)(c10)
         return out
 
+class InceptionXUnet2d(nn.Module):
+    def __init__(self,in_ch,out_ch):
+        super(InceptionXUnet2d, self).__init__()
+        self.name = "InceptionXUnet2d"
+
+        self.IX = InceptionX2d(in_ch, 32, 64)
+
+        self.dense_64_L = InceptionX2d(64, 64, 64)
+        self.pool1 = nn.Conv2d(64,128, 2, stride=2)
+
+        self.dense_128_L = InceptionX2d(128, 128, 128)
+        self.pool2 = nn.Conv2d(128,256, 2, stride=2)
+
+        self.dense_256_L = InceptionX2d(256, 256, 256)
+        self.pool3 = nn.Conv2d(256,512, 2, stride=2)
+
+        self.dense_512_L = InceptionX2d(512, 512, 512)
+        self.pool4 = nn.Conv2d(512,1024, 2, stride=2)
+
+        self.bottle_neck = DenseBlock2dA(1024)
+
+        self.up4 = nn.ConvTranspose2d(1024, 512, 2, stride=2)
+        self.dense_512_R = DenseBlock2dB(1024, 512)
+
+        self.up3 = nn.ConvTranspose2d(512, 256, 2, stride=2)
+        self.dense_256_R = DenseBlock2dB(512, 256)
+
+        self.up2 = nn.ConvTranspose2d(256, 128, 2, stride=2)
+        self.dense_128_R = DenseBlock2dB(256, 128)
+
+        self.up1 = nn.ConvTranspose2d(128, 64, 2, stride=2)
+        self.dense_64_R = DenseBlock2dB(128, 64)        
+
+        self.conv10 = nn.Conv2d(64,out_ch, 1)
+
+    def forward(self,x):
+        ix = self.IX(x)
+
+        c1=self.dense_64_L(ix)
+        p1=self.pool1(c1)
+
+        c2=self.dense_128_L(p1)
+        p2=self.pool2(c2)
+
+        c3=self.dense_256_L(p2)
+        p3=self.pool3(c3)
+
+        c4=self.dense_512_L(p3)
+        p4=self.pool4(c4)
+
+        c5=self.bottle_neck(p4)
+
+        up_4=self.up4(c5)
+        merge_4=torch.cat([c4, up_4],dim=1)
+        c6=self.dense_512_R(merge_4)
+
+        up_3=self.up3(c6)
+        merge_3=torch.cat([c3, up_3],dim=1) 
+        c7=self.dense_256_R(merge_3)
+
+        up_2=self.up2(c7)
+        merge_2=torch.cat([c2, up_2],dim=1) 
+        c8=self.dense_128_R(merge_2)
+
+        up_1=self.up1(c8)
+        merge_1=torch.cat([c1, up_1],dim=1) 
+        c9=self.dense_64_R(merge_1)
+
+        c10 = self.conv10(c9)
+        out = nn.Softmax(dim=1)(c10)
+        return out

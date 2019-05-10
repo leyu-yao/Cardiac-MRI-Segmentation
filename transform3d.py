@@ -27,11 +27,27 @@ usage : tran = transform(para)
         X, Y = tran(X, Y)
 """
 import torch
+import cv2
+import numpy as np 
 from torchvision import transforms
 from random import choice
 
 # ADD Transforms Tomorrow
-
+class CLAHE(object):
+    '''
+    This operation only afffects X, does not affect Y. 
+    C,X,Y
+    '''
+    def __call__(self, X):
+        c,d,h = X.shape
+        X_norm =  (255*(X - X.min()) / (X.max() - X.min())).astype(np.uint8)
+        
+        img_2d = X_norm.reshape(d,h).astype(np.uint8)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        equ = clahe.apply(img_2d)
+        img_out = equ.reshape(c,d,h).astype(np.float32)
+        
+        return img_out
 class data_augumentation_2d(object):
 
     def __init__(self,size):

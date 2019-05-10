@@ -78,15 +78,7 @@ def generate_z_slices(dst_dir, src_dir, shapes, visualize):
 
 
         for _ in tqdm(range(W)):
-            if visualize:
-                plt.subplot(1,2,1)
-                plt.title("image")
-                plt.imshow(img[0,:,:,_])
-                
-                plt.subplot(1,2,2)
-                plt.title("mask")
-                plt.imshow(150*mask[1:,:,:,_].sum(0))
-                plt.pause(0.001)
+
 
 
             # Generate different size
@@ -94,9 +86,29 @@ def generate_z_slices(dst_dir, src_dir, shapes, visualize):
                 img_name = os.path.join(dst_dir, '%d_image.npy'%idx)
                 mask_name = os.path.join(dst_dir, '%d_label.npy'%idx)
                 x_s, y_s = resizer(img[:,:,:,_], mask[:, :, :, _])
+
+                x_s = transform3d.CLAHE()(x_s)
+
                 np.save(img_name, x_s)
                 np.save(mask_name, y_s)
                 idx += 1
+                
+                if visualize:
+                    plt.subplot(1,3,1)
+                    plt.title("image")
+                    plt.imshow(x_s[0,:,:])
+                    
+                    plt.subplot(1,3,2)
+                    plt.title("image")
+                    plt.imshow(img[0,:,:,_])
+                    
+                    plt.subplot(1,3,3)
+                    plt.title("mask")
+                    plt.imshow(150*y_s[1:,:,:].sum(0))
+                    plt.pause(0.001)
+                
+                
+                
 
 def generate_x_slices(dst_dir, src_dir, shapes, visualize):
     img_lst = util.make_dataset(src_dir)
@@ -217,11 +229,11 @@ def generate_y_slices(dst_dir, src_dir, shapes, visualize):
                 idx += 1
 
 def Generate():
-    shapes_main = [(256,256)]
+    shapes_main = [(224,224)]
     shapes_side = [(256,128)]
     generate_z_slices('./train_z', './train', shapes_main, False)
-    generate_x_slices('./train_x', './train', shapes_side, False)
-    generate_y_slices('./train_y', './train', shapes_side, False)
+    #generate_x_slices('./train_x', './train', shapes_side, False)
+    #generate_y_slices('./train_y', './train', shapes_side, False)
 
 def train_orthogonality(batch_size, num_epochs, workspace, weight_name, ckp):
     #tran = transform3d.data_augumentation_2d(288)
