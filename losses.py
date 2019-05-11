@@ -92,6 +92,28 @@ class wCross(nn.Module):
         loss = torch.nn.functional.nll_loss(torch.log(input), target_label, weight=weight)
         return loss
 
+
+# %% volume size weighted focal loss
+class wFocal(nn.Module):
+    def __init__(self, gamma=1):
+        super(wFocal, self).__init__()
+        self.gamma = gamma
+
+    def forward(self, input, target):
+        
+        N,C,D,H = input.shape
+        target_label = target.argmax(dim=1)
+        weight = torch.zeros(C,).cuda()
+
+        voxel = N * D * H
+        for _ in range(C):
+            n = (target_label == _).sum()
+            weight[_] = 1 - n.float() / voxel
+
+        coef = torch.pow((1 - input), self.gamma)
+
+        loss = torch.nn.functional.nll_loss(coef * torch.log(input) , target_label, weight=weight)
+        return loss
     
 class CrossEntropyDiceLoss(nn.Module):
     
