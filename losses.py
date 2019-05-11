@@ -194,7 +194,7 @@ class wFocal(nn.Module):
 
         coef = torch.pow((1 - input), self.gamma)
 
-        loss = torch.nn.functional.nll_loss(coef * torch.log(input) * , target_label, weight=weight)
+        loss = torch.nn.functional.nll_loss(coef * torch.log(input) , target_label, weight=weight)
         return loss
 
 
