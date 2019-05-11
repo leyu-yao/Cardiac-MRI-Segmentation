@@ -222,7 +222,7 @@ class mDSC(nn.Module):
 
 # %% hybird Loss
 class Hybird_Loss(nn.Module):
-    def __init__(self, w4Cross=1, w4mDSC=0):
+    def __init__(self, w4Cross=0.0, w4mDSC=1.0):
         super(Hybird_Loss, self).__init__()
         self.w4Cross = w4Cross
         self.w4mDSC = w4mDSC
@@ -230,9 +230,9 @@ class Hybird_Loss(nn.Module):
     def forward(self, output, target):
         #return self.w4Cross * wFocal()(output, target) + self.w4mDSC * mDSC()(output, target)
         #return self.w4Cross * wCross()(output, target) + self.w4mDSC * mDSC()(output, target)
-        #return self.w4mDSC * mDSC()(output, target)
+        return self.w4mDSC * mDSC()(output, target)
         #return self.w4Cross * wCross()(output, target)
-        return self.w4Cross * wFocal(2)(output, target)
+        #return self.w4Cross * wFocal(2)(output, target)
 
 
 
