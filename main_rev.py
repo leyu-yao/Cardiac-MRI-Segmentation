@@ -132,7 +132,7 @@ def train2d(num_classes, batch_size, num_epochs, workspace="./train2d", device='
     if ckp is not None:
         model.load_state_dict(torch.load(ckp, map_location=device))
 
-    criterion = losses.DiceLoss()
+    criterion = losses.wFocal()
     #criterion = losses.ComposedLoss([losses.DiceLoss(),losses.EdgeLoss()],[0.8,0.2])
     optimizer = optim.Adam(model.parameters(), weight_decay=1e-4, lr=1e-3)
     dataset = Dataset2d(workspace, transform=transform)
