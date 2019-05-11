@@ -48,6 +48,21 @@ class CLAHE(object):
         img_out = equ.reshape(c,d,h).astype(np.float32)
         
         return img_out
+
+def clahe_for_tensor(X):
+    '''
+    1 1 d h
+    '''
+    _, c, d, h = X.shape
+    X = X.cpu().numpy()
+    X_norm = (255*(X - X.min()) / (X.max() - X.min())).astype(np.uint8)
+    img = X_norm[0,0,:,:]
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    equ = clahe.apply(img)
+    X_tensor = torch.from_numpy(equ[np.newaxis, np.newaxis, :, :].astype(np.float32)).cuda()
+    return X_tensor
+
+
 class data_augumentation_2d(object):
 
     def __init__(self,size):

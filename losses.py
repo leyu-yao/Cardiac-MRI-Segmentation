@@ -73,6 +73,25 @@ class DiceLoss(nn.Module):
         
         return 1 - dice/C
     
+# %% volume size weighted cross entropy
+class wCross(nn.Module):
+    def __init__(self):
+        super(wCross, self).__init__()
+
+    def forward(self, input, target):
+        
+        N,C,D,H = input.shape
+        target_label = target.argmax(dim=1)
+        weight = torch.zeros(C,).cuda()
+
+        voxel = N * D * H
+        for _ in range(C):
+            n = (target_label == _).sum()
+            weight[_] = 1 - n.float() / voxel
+
+        loss = torch.nn.functional.nll_loss(torch.log(input), target_label, weight=weight)
+        return loss
+
     
 class CrossEntropyDiceLoss(nn.Module):
     

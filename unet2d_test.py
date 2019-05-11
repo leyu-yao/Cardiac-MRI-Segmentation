@@ -18,6 +18,7 @@ import argparse
 import util
 import models
 import losses
+import transform3d
 
 
 class test_on_2dUnet_Z(object):
@@ -31,7 +32,7 @@ class test_on_2dUnet_Z(object):
         self.imgs = util.make_dataset(workspace)
         # load model
         #self.model = models.Unet2d(1,self.num_classes).to(device)
-        self.model = models.InceptionXDenseUnet2d(1,self.num_classes).to(device)
+        self.model = models.InceptionXUnet2d(1,self.num_classes).to(device)
         self.model.load_state_dict(torch.load(ckp, map_location=device))
         self.model.eval()
         self.criterion = losses.DiceLoss()
@@ -70,6 +71,9 @@ class test_on_2dUnet_Z(object):
 
                 for w in tqdm(range(W)):
                     x = self.mp(x_tensor[:,:,:,:,w])
+
+                    x = transform3d.clahe_for_tensor(x)
+
                     out_tensor[:,:,:,:,w] = up_sample(self.model(x))
 
                 #out_tensor = out_tensor.argmax(dim=1, keepdim=True)
@@ -233,7 +237,7 @@ if __name__ == '__main__':
     parse.add_argument("axis", type=str)
     parse.add_argument("ckp", type=str)
     parse.add_argument("workspace", type=str)
-    parse.add_argument("--resolution", nargs='+', type=int, default=(256,256))
+    parse.add_argument("--resolution", nargs='+', type=int, default=(224,224))
 
     args = parse.parse_args()
 
