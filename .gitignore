@@ -6,3 +6,5 @@
 *.pyc
 *.json
 *.png
+c3d.pickle
+train.rar
