@@ -84,6 +84,10 @@ class test_on_2dUnet_Z(object):
                 #np.save(x_path.replace('image', 'output_z_np'), out_tensor[0].cpu().numpy())
                 result_np = out_tensor[0].argmax(dim=0).cpu().numpy()
 
+                pro_np = out_tensor[0].cpu().numpy()
+                outfile = x_path.replace('image', 'output_z').replace('nii.gz', 'npy')
+                np.save(outfile, pro_np)
+
                 res = nib.Nifti1Image(result_np.astype(np.float32), affine)
 
                 nib.save(res, x_path.replace('image', 'output_z'))
@@ -142,6 +146,8 @@ class test_on_2dUnet_X(object):
 
                 for d in tqdm(range(D)):
                     x = self.mp(x_tensor[:,:,d,:,:])
+                    x = transform3d.clahe_for_tensor(x)
+
                     out_tensor[:,:,d,:,:] = up_sample(self.model(x))
 
                 #out_tensor = out_tensor.argmax(dim=1, keepdim=True)
@@ -153,6 +159,10 @@ class test_on_2dUnet_X(object):
                 #np.save(x_path.replace('image', 'output_x_np'), out_tensor[0].cpu().numpy())
 
                 result_np = out_tensor[0].argmax(dim=0).cpu().numpy()
+
+                pro_np = out_tensor[0].cpu().numpy()
+                outfile = x_path.replace('image', 'output_x').replace('nii.gz', 'npy')
+                np.save(outfile, pro_np)
 
                 res = nib.Nifti1Image(result_np.astype(np.float32), affine)
 
@@ -212,6 +222,8 @@ class test_on_2dUnet_Y(object):
 
                 for h in tqdm(range(H)):
                     x = self.mp(x_tensor[:,:,:,h,:])
+                    x = transform3d.clahe_for_tensor(x)
+
                     out_tensor[:,:,:,h,:] = up_sample(self.model(x))
 
                 #out_tensor = out_tensor.argmax(dim=1, keepdim=True)
@@ -224,6 +236,11 @@ class test_on_2dUnet_Y(object):
 
                 result_np = out_tensor[0].argmax(dim=0).cpu().numpy()
 
+                pro_np = out_tensor[0].cpu().numpy()
+                outfile = x_path.replace('image', 'output_y').replace('nii.gz', 'npy')
+                np.save(outfile, pro_np)
+
+
                 res = nib.Nifti1Image(result_np.astype(np.float32), affine)
 
                 nib.save(res, x_path.replace('image', 'output_y'))
@@ -231,21 +248,39 @@ class test_on_2dUnet_Y(object):
                 del x_tensor, y_tensor, out_tensor, result_np
 
 
+def combine(workspace):
+    imgs = util.make_dataset(workspace)
+    for x_path, y_path in self.imgs:
+        x = x_path.replace('image', 'output_x').replace('nii.gz', 'npy')
+        y = x_path.replace('image', 'output_y').replace('nii.gz', 'npy')
+        z = x_path.replace('image', 'output_z').replace('nii.gz', 'npy')
+        
+        output = (x + y + z) / 3
+
+        img = nib.load(x_path)             
+        affine = img.affine
+        res = nib.Nifti1Image(output.astype(np.float32), affine)
+
+        nib.save(res, x_path.replace('image', 'output'))
 
 if __name__ == '__main__':
     parse = argparse.ArgumentParser()
+    parse.add_argument("action", type=str)
     parse.add_argument("axis", type=str)
     parse.add_argument("ckp", type=str)
     parse.add_argument("workspace", type=str)
     parse.add_argument("--resolution", nargs='+', type=int, default=(224,224))
 
     args = parse.parse_args()
+    if args.action == 'run':
+        if args.axis == 'z':
+            test = test_on_2dUnet_Z(args.workspace, args.ckp, torch.device('cuda'), (224,224), 8)
+        elif args.axis == 'y':
+            test = test_on_2dUnet_Y(args.workspace, args.ckp, torch.device('cuda'), (256,128), 8)
+        elif args.axis == 'x':
+            test = test_on_2dUnet_X(args.workspace, args.ckp, torch.device('cuda'), (256,128), 8)
+        
+        test()
 
-    if args.axis == 'z':
-        test = test_on_2dUnet_Z(args.workspace, args.ckp, torch.device('cuda'), args.resolution, 8)
-    elif args.axis == 'y':
-        test = test_on_2dUnet_Y(args.workspace, args.ckp, torch.device('cuda'), args.resolution, 8)
-    elif args.axis == 'x':
-        test = test_on_2dUnet_X(args.workspace, args.ckp, torch.device('cuda'), args.resolution, 8)
-    
-    test()
+    elif args.action == 'combine':
+        combine(args.workspace)
